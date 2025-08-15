@@ -47,7 +47,7 @@ const CreateInterview = () => {
         <h2 className={`${styles.heading3}`}>Create New Interview </h2>
       </div>
 
-      <Progress value={step * 33} className="my-5" />
+      <Progress value={step * 33.33} className="my-5" />
     {step==1 ? <FormContainer handleInputChange={handleInputChange} goToNext={()=> onGoToNext()} />
    : 
   step==2?<QuestionList formData={formData} onCreateLink={ (interview_id)=> onCreateLink(interview_id)} /> : 
