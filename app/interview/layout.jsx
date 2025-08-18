@@ -1,3 +1,4 @@
+"use client"
 import React, { useState } from 'react'
 import InterviewHeader from './components/InterviewHeader'
 import { Toaster } from 'sonner'

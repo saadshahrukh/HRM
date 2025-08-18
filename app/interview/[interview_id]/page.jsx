@@ -1,12 +1,12 @@
 "use client"
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import Image from "next/image";
-import { Clock, Clock1, Info, Video } from "lucide-react";
+import { Clock, Clock1, Info, Loader2Icon, Video } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import styles from "@/app/styles";
 import { Button } from "@/components/ui/button";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/services/supaBaseClient";
 import { toast } from "sonner";
 import { InterviewDataContext } from "@/context/InterviewDataContext";
@@ -21,6 +21,7 @@ const [interviewData , setInterviewData] = useState();
 const {interviewInfo , setInterviewInfo} = useContext(InterviewDataContext);
 const [userName , setUserName] = useState();
 const [loading , setLoading] = useState(false)
+const router = useRouter()
 
 useEffect(()=>{  
 
@@ -53,14 +54,19 @@ toast("Incorrect Interview Link")
 
 const onJoinInterview = async () => { 
 
-    
+    setLoading(true);
     let { data: Interviews, error } = await supabase
   .from('Interviews')
   .select("*")
    .eq('interview_id', interview_id)
 
    console.log(Interviews[0])
-
+   setInterviewInfo({
+    userName : userName,
+    interviewData: Interviews[0]
+   });
+   router.push('/interview/'+interview_id+'/start')
+setLoading(false);
 
 }
 
@@ -109,7 +115,7 @@ const onJoinInterview = async () => {
           </div>
         </div>
 
-    <Button className={'my-5 w-full font-bold'} disabled={loading || !userName }  onClick={()=>onJoinInterview()} > <Video /> Join Interview </Button>
+    <Button className={'my-5 w-full font-bold'} disabled={loading || !userName }  onClick={()=>onJoinInterview()} > <Video /> {loading&&<Loader2Icon   />} Join Interview </Button>
 
       </div>
 
