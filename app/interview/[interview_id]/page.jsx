@@ -19,6 +19,7 @@ const {interview_id} = useParams()
 // console.log(interview_id)
 const [interviewData , setInterviewData] = useState();
 const {interviewInfo , setInterviewInfo} = useContext(InterviewDataContext);
+const [userEmail, setUserEmail] = useState()
 const [userName , setUserName] = useState();
 const [loading , setLoading] = useState(false)
 const router = useRouter()
@@ -63,6 +64,7 @@ const onJoinInterview = async () => {
    console.log(Interviews[0])
    setInterviewInfo({
     userName : userName,
+    userEmail: userEmail,
     interviewData: Interviews[0]
    });
    router.push('/interview/'+interview_id+'/start')
@@ -95,12 +97,17 @@ setLoading(false);
         </h2>
         <h2 className="flex gap-2 items-center text-gray-500  mt-3 font-bold ">
           {" "}
-          <Clock1 className="h-4 w-4" /> {interviewData?.duration || "Not Found"}
+          <Clock className="h-4 w-4" /> : {interviewData?.duration || "Not Found"}
         </h2>
 
         <div className="w-full ">
           <h2 className={`${styles.heading3} `}>Enter Your Full name</h2>
           <Input placeholder="e.g John Doe"  onChange={(event)=>{setUserName(event.target.value)}} className="mt-3" />
+        </div>
+
+         <div className="w-full mt-3 ">
+          <h2 className={`${styles.heading3} `}>Enter Your Email</h2>
+          <Input placeholder="e.g john@gmail.com"  onChange={(event)=>{setUserEmail(event.target.value)}} className="mt-3" />
         </div>
 
         <div className="bg-blue-100 flex p-5 gap-5 rounded-2xl mt-5 w-full" >
