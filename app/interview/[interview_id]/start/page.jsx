@@ -6,11 +6,18 @@ import React, { useContext, useEffect, useState } from "react";
 import Vapi from "@vapi-ai/web";
 import AlertConfirmation from "./components/AlertConfirmation";
 import { toast } from "sonner";
+import axios from "axios";
+import { supabase } from "@/services/supaBaseClient";
+import { useParams, useRouter } from "next/navigation";
 
 const StartInterview = () => {
   const { interviewInfo, setInterviewInfo } = useContext(InterviewDataContext);
   const vapi = new Vapi(process.env.NEXT_PUBLIC_VAPI_API_KEY);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [conversation , setConversation] = useState()
+  const {interview_id} = useParams()
+  const [loading , setLoading] = useState()
+  const router = useRouter()
 
   useEffect(() => {
     interviewInfo && startCall();
@@ -39,11 +46,11 @@ const StartInterview = () => {
       voice: {
         //new voice acc to documentation
         provider: "11labs",
-        voiceId: "21m00Tcm4TlvDq8ikWAM",
+        voiceId: "6JsmTroalVewG1gA6Jmw",  
       },
       model: {
         provider: "openai",
-        model: "gpt-4",
+        model: "gpt-4o",
         messages: [
           {
             role: "system",
@@ -51,7 +58,7 @@ const StartInterview = () => {
               `
   You are an AI voice assistant conducting interviews.
 Your job is to ask candidates provided interview questions, assess their responses.
-Begin the conversation with a friendly introduction, setting a relaxed yet professional tone. Example:
+Begin the conversation with a friendly introduction, setting a relaxed freindly expressive excited and yet professional tone. Example:
 "Hey there! Welcome to your ` +
               interviewInfo?.interviewData?.jobPosition +
               `  interview. Let’s get started with a few questions!"
@@ -64,16 +71,16 @@ If the candidate struggles, offer hints or rephrase the question without giving 
 Provide brief, encouraging feedback after each answer. Example:
 "Nice! That’s a solid answer."
 "Hmm, not quite! Want to try again?"
-Keep the conversation natural and engaging—use casual phrases like "Alright, next up..." or "Let’s tackle a tricky one!"
+Keep the conversation natural and engaging—use casual phrases like "Alright, ahh, no no no,yeah yeah, You're right, next up..." or "Let’s tackle a tricky one!"
 After 5-7 questions, wrap up the interview smoothly by summarizing their performance. Example:
 "That was great! You handled some tough questions well. Keep sharpening your skills!"
 End on a positive note:
 "Thanks for chatting! Hope to see you crushing projects soon!"
 Key Guidelines:
-✅ Be friendly, engaging, and witty 🎤
-✅ Keep responses short and natural, like a real conversation
+✅ Be friendly, expressive tone engaging, and witty 🎤
+✅ Keep responses short and extereme natural, like a real conversation
 ✅ Adapt based on the candidate’s confidence level
-✅ Ensure the interview remains focused on React
+✅ Ensure the interview remains focused on that Position : `+interviewInfo?.interviewData?.jobPosition+`
 `.trim(),
           },
         ],
@@ -86,9 +93,34 @@ Key Guidelines:
   const StopInterview = () => {
     vapi.stop();
     console.log("vapi has stopped");
+    GenerateFeedback()
   };
 
   // Event listeners
+
+
+  // vapi.on("message", (message) => {
+  //   console.log(message?.conversation);
+  //   setConversation(message?.conversation)
+  // });
+
+
+useEffect(()=>{
+
+const handleMessage = (message) => {
+
+console.log('Message:' , message);
+if (message?.conversation) {
+  const convoString = JSON.stringify(message.conversation);
+  console.log('Conversation string:' , convoString);
+  setConversation(convoString);
+
+}
+
+};
+
+vapi.on("message", handleMessage);
+
   vapi.on("call-start", () => {
     console.log("Call started");
     toast("Your Interview Call is Connected");
@@ -105,7 +137,58 @@ Key Guidelines:
   vapi.on("call-end", () => {
     console.log("Call ended");
     toast("Your Interview Call is Ended");
+    GenerateFeedback()
   });
+
+//clean up the listener
+return () => {
+vapi.off("message", handleMessage);
+vapi.off('call-start' , ()=>console.log("END"));
+vapi.off('speech-start',()=>console.log("END"));
+vapi.off('speech-end' , ()=>console.log("END"));
+
+
+};
+},[])
+
+
+const GenerateFeedback = async() => {
+
+
+console.log("conversation", conversation)
+
+    if(!conversation) {
+      return;
+    }
+
+    const result=await axios.post('/api/ai-feedback' , {
+      conversation:conversation
+    });
+
+    console.log(result?.data);
+    const Content =result.data.content;
+    const FINAL_CONTENT = Content.replace('```json','').replace('```','')
+    console.log(FINAL_CONTENT)
+  //save it to our database
+    const { data, error } = await supabase
+  .from('interview-feedback')
+  .insert([
+    { 
+        userName : interviewInfo?.userName,
+        userEmail : interviewInfo?.userEmail,
+        interview_id :interview_id,
+        feedback : JSON.parse(FINAL_CONTENT),
+        recommended : false
+       },
+
+
+  ])
+  .select()
+console.log(data);
+router.replace('/interview/'+interview_id+"/completed")
+// setLoading(false);
+
+  }
 
   return (
     <div className="p-20 lg:px-48 xl:px-56 max-h-[91vh] ">
@@ -118,25 +201,34 @@ Key Guidelines:
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-7 mt-5">
         <div className="bg-white h-[400px] rounded-lg border flex flex-col gap-3 items-center justify-center ">
+          <div className="relative" >
+       { !isSpeaking &&  <span className="absolute inset-0 rounded-full bg-gray-400 opacity-75 animate-ping"  />}
           <Image
             src={"/ai.jpg"}
             alt="ai"
             width={100}
             height={100}
-            className="w-[120px] h-[120px] rounded-full object-cover"
+            className="w-[120px] h-[120px] rounded-full object-cover border-2 p-3 bg-blue-950"
           />
+          </div>
           <h2 className="font-bold text-2xl">AI-Interviewer</h2>
         </div>
         <div className="bg-white p-20 h-[400px] rounded-lg border flex flex-col gap-3 items-center justify-center">
+          <div className="relative" >
+                             {isSpeaking &&  <span className="absolute inset-0 rounded-full bg-blue-500 opacity-75 animate-ping"  />}
+
           <h2 className="text-3xl bg-primary text-white p-10  px-13 rounded-full ">
+
             {interviewInfo?.userName[0]}
           </h2>
           <h2 className="font-bold text-2xl">{interviewInfo?.userName}</h2>
+        </div>
         </div>
       </div>
 
       <div className="flex items-center gap-7 justify-center mt-20">
         <Mic className="h-15 w-15 p-3 bg-gray-500 rounded-full text-white cursor-pointer  " />
+        {/* {!loading ?  } */}
         <AlertConfirmation stopInterview={() => StopInterview()}>
           <Phone className="h-15 w-15 p-3 bg-red-500 rounded-full text-white cursor-pointer  " />
         </AlertConfirmation>
