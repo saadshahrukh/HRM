@@ -1,15 +1,14 @@
-"use client";
+"use client"
 
-import { useUser } from "@/app/Provider";
-import { Button } from "@/components/ui/button";
-import { supabase } from "@/services/supaBaseClient";
-import { Camera, Plus, Smile } from "lucide-react";
-import Link from "next/link";
-import { Router } from "next/router";
-import React, { useEffect, useState } from "react";
-import InterviewCard from "./InterviewCard";
+import { Button } from '@/components/ui/button';
+import { supabase } from '@/services/supaBaseClient';
+import { Camera, Plus } from 'lucide-react';
+import Link from 'next/link';
+import React, { useEffect, useState } from 'react'
+import InterviewCard from '../dashboard/components/InterviewCard';
+import { useUser } from '@/app/Provider';
 
-const LatestInterviewsList = () => {
+const AllInterview = () => {
   const [interviewList, setInterviewList] = useState([]);
   const { user } = useUser();
 
@@ -23,7 +22,7 @@ const LatestInterviewsList = () => {
       .select("*")
       .eq("userEmail", user?.email)
       .order("id",{ascending:false})
-      .limit(6);
+     
 
     console.log("interviews lists",Interviews);
     setInterviewList(Interviews);
@@ -31,8 +30,8 @@ const LatestInterviewsList = () => {
 
   return (
     <div className="my-5">
-      <h2 className="text-xl font-semibold py-5 ">
-        Previously Created Interviews
+      <h2 className="text-2xl font-bold py-5 ">
+        All Created Interviews
       </h2>
 
       {interviewList?.length == 0 && (
@@ -44,7 +43,7 @@ const LatestInterviewsList = () => {
           <Link href={"dashboard/create-interview"}>
             <Button>
               {" "}
-              <Plus /> Create New Interview{" "}
+              <Plus/> Create New Interview{" "}
             </Button>{" "}
           </Link>
         </div>
@@ -61,6 +60,6 @@ const LatestInterviewsList = () => {
       }
     </div>
   );
-};
+}
 
-export default LatestInterviewsList;
+export default AllInterview
