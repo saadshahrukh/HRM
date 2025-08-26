@@ -8,12 +8,14 @@ import FormContainer from "./components/FormContainer";
 import QuestionList from "./components/QuestionList";
 import { toast } from "sonner"
 import InterviewLink from "./components/InterviewLink";
+import { useUser } from "@/app/Provider";
 
 const CreateInterview = () => {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState();
-  const [interviewId, setInterviewId] = useState()
+  const [interviewId, setInterviewId] = useState();
+  const {user} = useUser()
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({
       ...prev,
@@ -24,6 +26,10 @@ const CreateInterview = () => {
   console.log("data", formData);
 
   const onGoToNext = () => {
+    if (user?.credits<=0) {
+      toast("PLease Add Credits")
+      return ;
+    }
     if (!formData?.jobPosition || !formData?.jobDescription || !formData?.duration|| !formData?.type ) {
       toast("Please fill all the Fields");
       return ;
