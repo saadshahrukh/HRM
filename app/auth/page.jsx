@@ -4,14 +4,20 @@ import React from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/services/supaBaseClient";
+import { redirect } from "next/navigation";
 
 function Login() {
 
   // for sign in users
   const signUp = async () =>  {
     const {erros} = await supabase.auth.signInWithOAuth({
-      provider : 'google'
+      provider : 'google',
+      options :{
+        redirectTo: `${window.location.origin}/dashboard`
+      }
     })
+
+  
   }
 
 

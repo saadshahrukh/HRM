@@ -1,16 +1,10 @@
 "use client"
 import React from 'react'
 import { Button } from '@/components/ui/button'
+import { redirect } from 'next/navigation'
 
 function Home() {
-  return (
-    <>   
-    <Button> Click me </Button>
-     <div >Home</div>
-    </>
-
-   
-  )
+  redirect('/auth')
 }
 
 export default Home
