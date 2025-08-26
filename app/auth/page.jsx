@@ -46,7 +46,7 @@ function Login() {
           <Button 
           onClick={signUp} 
           className='my-5 w-full'  >SignUp With Google</Button>
-          <p className="text-gray-300 text-sm text-center" >Powered By Metawayz</p>
+          <p className="text-gray-300 text-sm text-center" >Powered By Saad </p>
         </div>
       </div>  
     </div>
