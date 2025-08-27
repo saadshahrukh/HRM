@@ -4,7 +4,6 @@ import React from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/services/supaBaseClient";
-import { redirect } from "next/navigation";
 
 function Login() {
 
@@ -27,7 +26,7 @@ function Login() {
     <div className="flex flex-col items-center justify-center min-h-screen " >
       <div className="flex flex-col items-center border rounded-2xl p-4" >
         <Image
-        src={'/logo.webp'}
+        src={'/logo.png'}
         alt="A logo of an AI recruiter"
         height={400}
         width={400}

@@ -76,7 +76,7 @@ setLoading(false);
     <div className="px-10 md:px-28 lg:px-94  py-20  ">
       <div className="flex  flex-col justify-center items-center border rounded-3xl bg-white p-7 lg:px-43 xl:px-56 ">
         <Image
-          src={"/logo.webp"}
+          src={"/logo.png"}
           width={90}
           height={90}
           className="w-[180px]"

@@ -5,7 +5,7 @@ const InterviewHeader = () => {
   return (
     <div className='p-4 shadow' >
         <Image 
-        src={"/logo.webp"}
+        src={"/logo.png"}
         width={90}
         height={90}
         className='w-[140px]'

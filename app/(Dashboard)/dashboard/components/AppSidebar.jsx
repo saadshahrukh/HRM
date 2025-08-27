@@ -19,7 +19,7 @@ import Link from "next/link"
     <Sidebar>
       <SidebarHeader>
         <Image 
-        src={"/logo.webp"} width={550} height={150}  alt="logo" 
+        src={"/logo.png"} width={550} height={150}  alt="logo" 
         className="p-5 "
         />
         <Button  className="w-full " > Create New Interview <Plus /> </Button>
