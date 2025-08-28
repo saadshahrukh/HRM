@@ -19,7 +19,7 @@ const CandidateList = ({CandidateList}) => {
         </div>
         </div>
         <div className='flex gap-5 items-center' >
-            <h2 className='text-green-600' >6/10</h2>
+            <h2 className={`text-green-600`} >6/10</h2>
             <CandidateFeedbackDialog candidate={candidate}  />
         </div>
     </div>
