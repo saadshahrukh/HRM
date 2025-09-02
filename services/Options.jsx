@@ -92,110 +92,110 @@ format: interviewQuestions=[
 
 
 
-export const FEEDBACK_PROMPT = `{{conversation}}
-
-Depends on this Interview Conversation between assitant and user, 
-
-Give me feedback for user interview. Give me rating out of 10 for technical Skills, 
-
-Communication, Problem Solving, Experince. Also give me summery in 3 lines 
-
-about the interview and one line to let me know whether is recommanded 
-
-for hire or not with msg. Give me response in JSON format
-
-{
-
-    feedback:{
-
-        rating:{
-
-            techicalSkills:5,
-
-            communication:6,
-
-            problemSolving:4,
-
-            experince:7
-
-        },
-
-        summery:<in 3 Line>,
-
-        Recommendation:'',
-
-        RecommendationMsg:''
-
-
-
-    }
-
-}
-
-`
-
-
-
 // export const FEEDBACK_PROMPT = `{{conversation}}
 
-// Depends on this Interview Conversation between assistant and user,  
+// Depends on this Interview Conversation between assitant and user, 
 
-// Give me feedback for user interview. Keep the same structure as below but also
-// add more detailed analysis sections.  
+// Give me feedback for user interview. Give me rating out of 10 for technical Skills, 
 
-// Give me rating out of 10 for Technical Skills, Communication, Problem Solving, and Experience.  
-// Also give me a summary in 3 lines about the interview and one line to let me know whether the candidate is recommended for hire or not with message.  
+// Communication, Problem Solving, Experince. Also give me summery in 3 lines 
 
-// Additionally, include extra fields for deeper analysis:
-// - overallScore (average of skills)
-// - culturalFit (0-10)
-// - aiAnalysis (list of 3–5 bullet points with confidence %)
-// - questionAnalysis (totalQuestions, correctAnswers, avgResponseTime, confidenceLevel)
-// - behavioralAnalysis (confidence, stressLevel, engagement, eyeContact)
-// - summaryDetails (strengths [list], areasOfDevelopment [list])
+// about the interview and one line to let me know whether is recommanded 
 
-// Return the response **only in valid JSON** format like this:
+// for hire or not with msg. Give me response in JSON format
 
 // {
-//   "feedback": {
-//     "rating": {
-//       "techicalSkills": 5,
-//       "communication": 6,
-//       "problemSolving": 4,
-//       "experince": 7
-//     },
-//     "summery": "<in 3 lines>",
-//     "Recommendation": "",
-//     "RecommendationMsg": "",
 
-//     "overallScore": 7.8,
-//     "culturalFit": 8,
-//     "aiAnalysis": [
-//       { "point": "Strong technical foundation", "confidence": "87%" },
-//       { "point": "Needs improvement in leadership", "confidence": "65%" }
-//     ],
-//     "questionAnalysis": {
-//       "totalQuestions": 12,
-//       "correctAnswers": 10,
-//       "avgResponseTime": "2.3 min",
-//       "confidenceLevel": "High"
-//     },
-//     "behavioralAnalysis": {
-//       "confidence": "High",
-//       "stressLevel": "Low",
-//       "engagement": "Excellent",
-//       "eyeContact": "Good"
-//     },
-//     "summaryDetails": {
-//       "strengths": [
-//         "Clear communication and articulation",
-//         "Strong problem-solving skills"
-//       ],
-//       "areasOfDevelopment": [
-//         "Leadership experience could be improved",
-//         "Backend knowledge needs improvement"
-//       ]
+//     feedback:{
+
+//         rating:{
+
+//             techicalSkills:5,
+
+//             communication:6,
+
+//             problemSolving:4,
+
+//             experince:7
+
+//         },
+
+//         summery:<in 3 Line>,
+
+//         Recommendation:'',
+
+//         RecommendationMsg:''
+
+
+
 //     }
-//   }
+
 // }
+
 // `
+
+
+
+export const FEEDBACK_PROMPT = `{{conversation}}
+
+Depends on this Interview Conversation between assistant and user,  
+
+Give me feedback for user interview. Keep the same structure as below but also
+add more detailed analysis sections.  
+
+Give me rating out of 10 for Technical Skills, Communication, Problem Solving, and Experience.  
+Also give me a summary in 3 lines about the interview and one line to let me know whether the candidate is recommended for hire or not with message.  
+
+Additionally, include extra fields for deeper analysis:
+- overallScore (average of skills)
+- culturalFit (0-10)
+- aiAnalysis (list of 3–5 bullet points with confidence %)
+- questionAnalysis (totalQuestions, correctAnswers, avgResponseTime, confidenceLevel)
+- behavioralAnalysis (confidence, stressLevel, engagement, eyeContact)
+- summaryDetails (strengths [list], areasOfDevelopment [list])
+
+Return the response **only in valid JSON** format like this:
+
+{
+  "feedback": {
+    "rating": {
+      "techicalSkills": 5,
+      "communication": 6,
+      "problemSolving": 4,
+      "experince": 7
+    },
+    "summery": "<in 3 lines>",
+    "Recommendation": "",
+    "RecommendationMsg": "",
+
+    "overallScore": 7.8,
+    "culturalFit": 8,
+    "aiAnalysis": [
+      { "point": "Strong technical foundation", "confidence": "87%" },
+      { "point": "Needs improvement in leadership", "confidence": "65%" }
+    ],
+    "questionAnalysis": {
+      "totalQuestions": 12,
+      "correctAnswers": 10,
+      "avgResponseTime": "2.3 min",
+      "confidenceLevel": "High"
+    },
+    "behavioralAnalysis": {
+      "confidence": "High",
+      "stressLevel": "Low",
+      "engagement": "Excellent",
+      "eyeContact": "Good"
+    },
+    "summaryDetails": {
+      "strengths": [
+        "Clear communication and articulation",
+        "Strong problem-solving skills"
+      ],
+      "areasOfDevelopment": [
+        "Leadership experience could be improved",
+        "Backend knowledge needs improvement"
+      ]
+    }
+  }
+}
+`
