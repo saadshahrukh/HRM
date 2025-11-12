@@ -19,8 +19,8 @@ import Link from "next/link"
     <Sidebar>
       <SidebarHeader>
         <Image 
-        src={"/logo.png"} width={550} height={150}  alt="logo" 
-        className="p-5 "
+        src={"/logo.png"} width={100} height={100}  alt="logo" 
+        className="p-5 text-center flex justify-center w-full"
         />
         <Button  className="w-full " > Create New Interview <Plus /> </Button>
       </SidebarHeader>

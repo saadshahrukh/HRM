@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import InterviewDetailsContainer from "./components/InterviewDetailsContainer";
 import CandidateList from "./components/CandidateList";
+import styles from "@/app/styles";
 
 const InterviewDetail = () => {
   const { user } = useUser();
@@ -31,7 +32,7 @@ const InterviewDetail = () => {
   };
   return (
     <div>
-      <h2>Interview Details</h2>
+      {/* <h2 className={`${styles.heading1} py-5 px-3 text-center`} >Interview Details</h2> */}
 
       <InterviewDetailsContainer interviewDetail={interviewDetail} />
 
