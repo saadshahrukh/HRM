@@ -65,10 +65,16 @@ export const useVideoRecorder = ({
         };
 
         candidateRecorderRef.current.onstop = async () => {
-          const blob = new Blob(chunksRef.current.candidate, {
-            type: "video/webm",
-          });
-          await uploadVideo(blob, "candidate", interviewId);
+          if (chunksRef.current.candidate.length > 0) {
+            const blob = new Blob(chunksRef.current.candidate, {
+              type: "video/webm",
+            });
+            try {
+              await uploadVideo(blob, "candidate", interviewId);
+            } catch (error) {
+              console.error("Failed to upload candidate video:", error);
+            }
+          }
         };
 
         candidateRecorderRef.current.start(1000);
@@ -87,10 +93,16 @@ export const useVideoRecorder = ({
         };
 
         aiRecorderRef.current.onstop = async () => {
-          const blob = new Blob(chunksRef.current.ai, {
-            type: "video/webm",
-          });
-          await uploadVideo(blob, "ai", interviewId);
+          if (chunksRef.current.ai.length > 0) {
+            const blob = new Blob(chunksRef.current.ai, {
+              type: "video/webm",
+            });
+            try {
+              await uploadVideo(blob, "ai", interviewId);
+            } catch (error) {
+              console.error("Failed to upload AI video:", error);
+            }
+          }
         };
 
         aiRecorderRef.current.start(1000);

@@ -333,16 +333,20 @@ Key Guidelines:
         vapiRef.current.stop();
       }
       
-      // Stop video recording
-      if (candidateStreamRef.current) {
-        candidateStreamRef.current.getTracks().forEach((track) => track.stop());
-      }
-
-      // Generate feedback and redirect
-      await GenerateFeedback();
+      // Stop video recording - wait a bit for final chunks
+      setTimeout(async () => {
+        if (candidateStreamRef.current) {
+          candidateStreamRef.current.getTracks().forEach((track) => track.stop());
+        }
+        
+        // Generate feedback and redirect
+        await GenerateFeedback();
+      }, 2000); // Wait 2 seconds for recording to finalize
     } catch (error) {
       console.error("Error stopping interview:", error);
       toast.error("Error ending interview");
+      // Still try to generate feedback
+      await GenerateFeedback();
     }
   };
 

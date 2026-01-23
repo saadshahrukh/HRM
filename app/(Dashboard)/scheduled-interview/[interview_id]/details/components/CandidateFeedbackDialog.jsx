@@ -41,6 +41,7 @@ import {
   CheckCircle2,
   XCircle,
   Download,
+  Video,
 } from "lucide-react";
 import { RiRobot2Fill } from "react-icons/ri";
 import Image from "next/image";
@@ -126,6 +127,9 @@ const CandidateFeedbackDialog = ({ candidate }) => {
     strengths: [],
     areasOfDevelopment: [],
   };
+
+  // Video recordings
+  const recordingUrls = feedback?.recordingUrls || {};
 
   // ---- Charts data ----
   const skillData = [
@@ -511,6 +515,60 @@ const CandidateFeedbackDialog = ({ candidate }) => {
               </div>
             </div>
           </div>
+
+          {/* Video Recordings */}
+          {(recordingUrls.candidate || recordingUrls.ai) && (
+            <div className="mt-6 bg-white rounded-2xl border shadow-sm p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <Video className="w-5 h-5 text-indigo-500" />
+                <h3 className="text-lg font-semibold text-gray-800">
+                  Interview Recordings
+                </h3>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                {recordingUrls.candidate && (
+                  <div className="border rounded-lg p-4">
+                    <h4 className="font-semibold text-sm text-gray-700 mb-2">
+                      Candidate Recording
+                    </h4>
+                    <video
+                      src={recordingUrls.candidate}
+                      controls
+                      className="w-full rounded-lg"
+                    />
+                    <a
+                      href={recordingUrls.candidate}
+                      download
+                      className="mt-2 inline-flex items-center gap-2 text-sm text-indigo-600 hover:text-indigo-700"
+                    >
+                      <Download className="w-4 h-4" />
+                      Download Video
+                    </a>
+                  </div>
+                )}
+                {recordingUrls.ai && (
+                  <div className="border rounded-lg p-4">
+                    <h4 className="font-semibold text-sm text-gray-700 mb-2">
+                      AI Interviewer Recording
+                    </h4>
+                    <video
+                      src={recordingUrls.ai}
+                      controls
+                      className="w-full rounded-lg"
+                    />
+                    <a
+                      href={recordingUrls.ai}
+                      download
+                      className="mt-2 inline-flex items-center gap-2 text-sm text-indigo-600 hover:text-indigo-700"
+                    >
+                      <Download className="w-4 h-4" />
+                      Download Video
+                    </a>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Recommendation */}
           <div

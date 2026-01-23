@@ -8,6 +8,7 @@ import {
   Settings,
   User2Icon,
   WalletCards,
+  Plug,
 } from "lucide-react";
 
 export const SideBarOptions = [
@@ -30,6 +31,11 @@ export const SideBarOptions = [
     name: "Billing",
     icon: WalletCards,
     path: "/billing",
+  },
+  {
+    name: "Integrations",
+    icon: Plug,
+    path: "/integrations",
   },
   {
     name: "Settings",
@@ -57,7 +63,7 @@ export const InterviewType = [
   },
 ];
 
- export  const QUESTION_PROMPT = `You are an expert technical interviewer.
+export const QUESTION_PROMPT = `You are an expert technical interviewer.
 Based on the following inputs, generate a well-structured list of high-quality interview questions:
 
 Job Title: {{jobTitle}}
@@ -89,72 +95,28 @@ format: interviewQuestions=[
 
 🎯 The goal is to create a structured, relevant, and time-optimized interview plan for a {{jobTitle}} role.`;
 
-
-
-
-// export const FEEDBACK_PROMPT = `{{conversation}}
-
-// Depends on this Interview Conversation between assitant and user, 
-
-// Give me feedback for user interview. Give me rating out of 10 for technical Skills, 
-
-// Communication, Problem Solving, Experince. Also give me summery in 3 lines 
-
-// about the interview and one line to let me know whether is recommanded 
-
-// for hire or not with msg. Give me response in JSON format
-
-// {
-
-//     feedback:{
-
-//         rating:{
-
-//             techicalSkills:5,
-
-//             communication:6,
-
-//             problemSolving:4,
-
-//             experince:7
-
-//         },
-
-//         summery:<in 3 Line>,
-
-//         Recommendation:'',
-
-//         RecommendationMsg:''
-
-
-
-//     }
-
-// }
-
-// `
-
-
-
 export const FEEDBACK_PROMPT = `{{conversation}}
 
-Depends on this Interview Conversation between assistant and user,  
+Analyze this Interview Conversation between assistant and user.
 
-Give me feedback for user interview. Keep the same structure as below but also
-add more detailed analysis sections.  
+Give me feedback for the candidate interview. Provide ratings out of 10 for:
+- Technical Skills (techicalSkills)
+- Communication (communication)
+- Problem Solving (problemSolving)
+- Experience (experince)
 
-Give me rating out of 10 for Technical Skills, Communication, Problem Solving, and Experience.  
-Also give me a summary in 3 lines about the interview and one line to let me know whether the candidate is recommended for hire or not with message.  
+Also provide:
+- A summary in 3 lines (summery)
+- Recommendation: "Yes" or "No"
+- Recommendation message (RecommendationMsg)
+- Overall score (overallScore) - average of all ratings
+- Cultural fit score (culturalFit) - 0 to 10
+- AI Analysis (aiAnalysis) - array of 3-5 points with confidence percentages
+- Question Analysis (questionAnalysis) - totalQuestions, correctAnswers, avgResponseTime, confidenceLevel
+- Behavioral Analysis (behavioralAnalysis) - confidence, stressLevel, engagement, eyeContact
+- Summary Details (summaryDetails) - strengths array and areasOfDevelopment array
 
-Additionally, include extra fields for deeper analysis:
-- overallScore (average of skills)
-- culturalFit (0-10)
-- aiAnalysis (list of 3–5 bullet points with confidence %)
-- questionAnalysis (totalQuestions, correctAnswers, avgResponseTime, confidenceLevel)
-- behavioralAnalysis (confidence, stressLevel, engagement, eyeContact)
-- summaryDetails (strengths [list], areasOfDevelopment [list])
-
-Return the response **only in valid JSON** format like this:
+IMPORTANT: Return ONLY valid JSON, no markdown, no code blocks. The structure must be EXACTLY:
 
 {
   "feedback": {
@@ -164,38 +126,38 @@ Return the response **only in valid JSON** format like this:
       "problemSolving": 4,
       "experince": 7
     },
-    "summery": "<in 3 lines>",
-    "Recommendation": "",
-    "RecommendationMsg": "",
-
-    "overallScore": 7.8,
-    "culturalFit": 8,
+    "summery": "Three line summary of the interview performance.",
+    "Recommendation": "Yes",
+    "RecommendationMsg": "Detailed recommendation message here.",
+    "overallScore": 5.5,
+    "culturalFit": 6,
     "aiAnalysis": [
-      { "point": "Strong technical foundation", "confidence": "87%" },
-      { "point": "Needs improvement in leadership", "confidence": "65%" }
+      {
+        "point": "Analysis point here",
+        "confidence": "85%"
+      }
     ],
     "questionAnalysis": {
-      "totalQuestions": 12,
-      "correctAnswers": 10,
-      "avgResponseTime": "2.3 min",
-      "confidenceLevel": "High"
+      "totalQuestions": 6,
+      "correctAnswers": 3,
+      "avgResponseTime": "1.5 min",
+      "confidenceLevel": "Medium"
     },
     "behavioralAnalysis": {
-      "confidence": "High",
-      "stressLevel": "Low",
-      "engagement": "Excellent",
-      "eyeContact": "Good"
+      "confidence": "Medium",
+      "stressLevel": "Medium",
+      "engagement": "Good",
+      "eyeContact": "Not applicable (audio interview)"
     },
     "summaryDetails": {
       "strengths": [
-        "Clear communication and articulation",
-        "Strong problem-solving skills"
+        "Strength 1",
+        "Strength 2"
       ],
       "areasOfDevelopment": [
-        "Leadership experience could be improved",
-        "Backend knowledge needs improvement"
+        "Area 1",
+        "Area 2"
       ]
     }
   }
-}
-`
+}`;

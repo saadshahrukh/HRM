@@ -35,7 +35,7 @@ function AppSidebar() {
               width={32}
               height={32}
               alt="logo"
-              className="relative w-8 h-8 object-contain"
+              className="relative w-10 h-10 object-contain"
             />
           </div>
           <div>
@@ -72,7 +72,7 @@ function AppSidebar() {
                     className={`relative w-full justify-start gap-3 px-4 py-6 rounded-xl transition-all duration-300 group ${
                       isActive
                         ? "bg-indigo-500/10 text-indigo-400"
-                        : "text-gray-400 hover:bg-gray-800/50 hover:text-gray-100"
+                        : "text-gray-500  hover:bg-gray-800/50 hover:text-gray-100"
                     }`}
                   >
                     <Link href={option.path}>

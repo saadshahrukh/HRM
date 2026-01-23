@@ -7,10 +7,18 @@ export async function POST(req) {
 
     let FINAL_PROMPT = FEEDBACK_PROMPT.replace('{{conversation}}', JSON.stringify(conversation));
     
-    // Add eye contact information if available
+    // Add context information if available
     if (eyeContact !== undefined) {
-        FINAL_PROMPT += `\n\nAdditional Context:\n- Average Eye Contact: ${eyeContact.toFixed(1)}%\n- Video Recordings Available: ${recordingUrls ? 'Yes' : 'No'}`;
+        FINAL_PROMPT += `\n\nAdditional Context:\n- Average Eye Contact: ${eyeContact.toFixed(1)}%`;
     }
+    
+    // Add video recording info
+    if (recordingUrls && (recordingUrls.candidate || recordingUrls.ai)) {
+        FINAL_PROMPT += `\n- Video Recordings: Available`;
+    }
+    
+    // Emphasize strict JSON format
+    FINAL_PROMPT += `\n\nCRITICAL: Return ONLY valid JSON. No markdown code blocks, no explanations. Just the JSON object starting with { and ending with }.`;
 
     try{
     

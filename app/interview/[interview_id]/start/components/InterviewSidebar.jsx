@@ -69,75 +69,85 @@ const InterviewSidebar = ({
         </div>
       </div>
 
-      {/* Interview Progress */}
-      <div className="p-6 border-b border-gray-800 flex-1 overflow-y-auto">
-        <h3 className="text-sm font-semibold mb-4 text-gray-300">Interview Progress</h3>
-        <div className="space-y-4">
-          {stages.map((stage, index) => {
-            const isCurrent = currentStage === stage.id;
-            const isCompleted = stage.completed && !isCurrent;
+      {/* MODERN SCROLLBAR CONTAINER */}
+      <div className="flex-1 overflow-y-auto 
+        [&::-webkit-scrollbar]:w-1.5
+        [&::-webkit-scrollbar-track]:bg-gray-950
+        [&::-webkit-scrollbar-thumb]:bg-gray-700
+        [&::-webkit-scrollbar-thumb]:rounded-full
+        hover:[&::-webkit-scrollbar-thumb]:bg-indigo-500/50
+        transition-colors">
+        
+        {/* Interview Progress */}
+        <div className="p-6 border-b border-gray-800">
+          <h3 className="text-sm font-semibold mb-4 text-gray-300">Interview Progress</h3>
+          <div className="space-y-4">
+            {stages.map((stage, index) => {
+              const isCurrent = currentStage === stage.id;
+              const isCompleted = stage.completed && !isCurrent;
 
-            return (
-              <div key={stage.id} className="flex items-start gap-3">
-                <div className="mt-1">
-                  {isCompleted ? (
-                    <CheckCircle2 className="w-5 h-5 text-green-500" />
-                  ) : isCurrent ? (
-                    <Radio className="w-5 h-5 text-indigo-500" />
-                  ) : (
-                    <Circle className="w-5 h-5 text-gray-600" />
-                  )}
+              return (
+                <div key={stage.id} className="flex items-start gap-3">
+                  <div className="mt-1">
+                    {isCompleted ? (
+                      <CheckCircle2 className="w-5 h-5 text-green-500" />
+                    ) : isCurrent ? (
+                      <Radio className="w-5 h-5 text-indigo-500" />
+                    ) : (
+                      <Circle className="w-5 h-5 text-gray-600" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <p
+                      className={`text-sm ${
+                        isCurrent
+                          ? "text-indigo-400 font-medium"
+                          : isCompleted
+                          ? "text-gray-300"
+                          : "text-gray-500"
+                      }`}
+                    >
+                      {stage.label}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <p
-                    className={`text-sm ${
-                      isCurrent
-                        ? "text-indigo-400 font-medium"
-                        : isCompleted
-                        ? "text-gray-300"
-                        : "text-gray-500"
-                    }`}
-                  >
-                    {stage.label}
-                  </p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-        <div className="mt-6">
-          <div className="flex justify-between text-xs mb-2">
-            <span className="text-gray-400">Progress</span>
-            <span className="text-gray-300 font-medium">{interviewProgress}% Complete</span>
+              );
+            })}
           </div>
-          <Progress value={interviewProgress} className="h-2" />
+          <div className="mt-6">
+            <div className="flex justify-between text-xs mb-2">
+              <span className="text-gray-400">Progress</span>
+              <span className="text-gray-300 font-medium">{interviewProgress}% Complete</span>
+            </div>
+            <Progress value={interviewProgress} className="h-2" />
+          </div>
         </div>
-      </div>
 
-      {/* AI Analysis */}
-      <div className="p-6 border-b border-gray-800">
-        <h3 className="text-sm font-semibold mb-4 text-gray-300">AI Analysis</h3>
-        <div className="space-y-4">
-          <MetricBar
-            label="Confidence Level"
-            value={aiMetrics?.confidence || 0}
-            color="bg-blue-500"
-          />
-          <MetricBar
-            label="Communication"
-            value={aiMetrics?.communication || 0}
-            color="bg-green-500"
-          />
-          <MetricBar
-            label="Technical Knowledge"
-            value={aiMetrics?.technical || 0}
-            color="bg-purple-500"
-          />
+        {/* AI Analysis */}
+        <div className="p-6 border-b border-gray-800">
+          <h3 className="text-sm font-semibold mb-4 text-gray-300">AI Analysis</h3>
+          <div className="space-y-4">
+            <MetricBar
+              label="Confidence Level"
+              value={aiMetrics?.confidence || 0}
+              color="bg-blue-500"
+            />
+            <MetricBar
+              label="Communication"
+              value={aiMetrics?.communication || 0}
+              color="bg-green-500"
+            />
+            <MetricBar
+              label="Technical Knowledge"
+              value={aiMetrics?.technical || 0}
+              color="bg-purple-500"
+            />
+          </div>
         </div>
       </div>
 
       {/* Quick Notes */}
-      <div className="p-6 border-t border-gray-800">
+      <div className="p-6 border-t border-gray-800 bg-gray-900">
         <textarea
           placeholder="Add interview notes..."
           className="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
@@ -169,4 +179,3 @@ const MetricBar = ({ label, value, color }) => {
 };
 
 export default InterviewSidebar;
-
