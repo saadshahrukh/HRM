@@ -79,7 +79,7 @@ const Billing = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden rounded-xl border border-gray-800 bg-gradient-to-br from-indigo-600/20 to-purple-600/20 backdrop-blur-sm p-8"
+        className="relative overflow-hidden rounded-xl border border-gray-700 bg-gradient-to-br from-indigo-600/20 to-purple-600/20 backdrop-blur-sm p-8 shadow-lg"
       >
         <div className="relative z-10">
           <div className="flex items-center justify-between">
@@ -112,9 +112,9 @@ const Billing = () => {
                 transition={{ delay: index * 0.1 }}
                 className={`relative overflow-hidden rounded-xl border ${
                   pkg.popular
-                    ? "border-indigo-500 bg-gray-900/80"
-                    : "border-gray-800 bg-gray-900/50"
-                } backdrop-blur-sm p-6`}
+                    ? "border-indigo-500 bg-gray-800/90"
+                    : "border-gray-700 bg-gray-800/80"
+                } backdrop-blur-sm p-6 shadow-lg`}
               >
                 {pkg.popular && (
                   <div className="absolute top-0 right-0 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-semibold px-3 py-1 rounded-bl-lg">
@@ -185,7 +185,7 @@ const Billing = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="rounded-xl border border-gray-800 bg-gray-900/50 p-6"
+        className="rounded-xl border border-gray-700 bg-gray-800/80 p-6 shadow-lg"
       >
         <h3 className="text-lg font-semibold text-white mb-4">
           How Credits Work

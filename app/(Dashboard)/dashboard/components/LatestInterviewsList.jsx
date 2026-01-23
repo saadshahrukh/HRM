@@ -50,7 +50,7 @@ const LatestInterviewsList = () => {
         <Link href="/all-interview">
           <Button
             variant="ghost"
-            className="text-gray-400 hover:text-white"
+            className="text-gray-400 bg-gray-800/50 hover:bg-gray-800 hover:text-white border border-gray-700/50"
           >
             View All
             <ArrowRight className="w-4 h-4 ml-2" />
@@ -63,7 +63,7 @@ const LatestInterviewsList = () => {
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="h-64 rounded-xl border border-gray-800 bg-gray-900/50 animate-pulse"
+              className="h-64 rounded-xl border border-gray-700 bg-gray-800/80 animate-pulse"
             />
           ))}
         </div>
@@ -71,7 +71,7 @@ const LatestInterviewsList = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col gap-4 items-center justify-center bg-gray-900/50 border border-gray-800 rounded-xl p-12"
+          className="flex flex-col gap-4 items-center justify-center bg-gray-800/80 border border-gray-700 rounded-xl p-12 shadow-lg"
         >
           <div className="w-16 h-16 rounded-full bg-indigo-500/10 flex items-center justify-center">
             <Camera className="h-8 w-8 text-indigo-400" />

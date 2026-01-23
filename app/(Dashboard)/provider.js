@@ -11,7 +11,7 @@ function Dashboardprovider({ children }) {
 
         <main className="w-full p-6 lg:p-8">
           <div className="mb-6">
-            <SidebarTrigger className="text-white hover:bg-gray-800 border-gray-800" />
+            <SidebarTrigger className="text-gray-300 hover:bg-gray-800 border-gray-800 hover:text-white" />
           </div>
           {children}
         </main>

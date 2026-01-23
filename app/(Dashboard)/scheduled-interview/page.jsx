@@ -69,7 +69,7 @@ const ScheduledInterview = () => {
           placeholder="Search interviews by job position..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10 bg-gray-900/50 border-gray-800 text-white placeholder-gray-500 focus:border-indigo-500"
+          className="pl-10 bg-gray-800/80 border-gray-700 text-white placeholder-gray-400 focus:border-indigo-500 focus:bg-gray-800"
         />
       </div>
 
@@ -79,7 +79,7 @@ const ScheduledInterview = () => {
           {[1, 2, 3, 4, 5, 6].map((i) => (
             <div
               key={i}
-              className="h-64 rounded-xl border border-gray-800 bg-gray-900/50 animate-pulse"
+              className="h-64 rounded-xl border border-gray-700 bg-gray-800/80 animate-pulse"
             />
           ))}
         </div>
@@ -87,7 +87,7 @@ const ScheduledInterview = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col gap-4 items-center justify-center bg-gray-900/50 border border-gray-800 rounded-xl p-12"
+          className="flex flex-col gap-4 items-center justify-center bg-gray-800/80 border border-gray-700 rounded-xl p-12 shadow-lg"
         >
           <div className="w-16 h-16 rounded-full bg-indigo-500/10 flex items-center justify-center">
             <Camera className="h-8 w-8 text-indigo-400" />

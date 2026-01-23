@@ -46,7 +46,7 @@ const InterviewControls = ({
             variant="outline"
             size="lg"
             onClick={isPaused ? onResume : onPause}
-            className="rounded-full w-14 h-14 p-0 border-gray-700 hover:bg-gray-800"
+            className="rounded-full w-14 h-14 p-0 border-gray-700 bg-gray-800 hover:bg-gray-900"
           >
             {isPaused ? (
               <Play className="w-6 h-6 text-white" />
@@ -59,7 +59,7 @@ const InterviewControls = ({
             variant="outline"
             size="lg"
             onClick={onNextQuestion}
-            className="rounded-full w-14 h-14 p-0 border-gray-700 hover:bg-gray-800"
+            className="rounded-full w-14 h-14 p-0 border-gray-700 bg-gray-800  hover:bg-gray-900"
             disabled={!onNextQuestion}
           >
             <SkipForward className="w-6 h-6 text-white" />
@@ -76,7 +76,7 @@ const InterviewControls = ({
           <Button
             variant="outline"
             size="icon"
-            className="rounded-lg border-gray-700 hover:bg-gray-800"
+            className="rounded-lg border-gray-700 bg-gray-800 hover:bg-gray-900"
           >
             <Settings className="w-5 h-5 text-white" />
           </Button>

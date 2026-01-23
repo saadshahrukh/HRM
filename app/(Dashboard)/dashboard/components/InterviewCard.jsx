@@ -28,7 +28,7 @@ const InterviewCard = ({ interview, viewDetail = false }) => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="group relative overflow-hidden rounded-xl border border-gray-800 bg-gray-900/50 backdrop-blur-sm p-6 transition-all duration-300 hover:border-indigo-500/50 hover:shadow-lg hover:shadow-indigo-500/10"
+      className="group relative overflow-hidden rounded-xl border border-gray-700 bg-gray-800 p-6 transition-all duration-300 hover:border-indigo-500/50 hover:shadow-lg"
     >
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
@@ -79,7 +79,7 @@ const InterviewCard = ({ interview, viewDetail = false }) => {
           <Button
             variant="outline"
             onClick={onCopyLink}
-            className="flex-1 border-gray-700 hover:bg-gray-800 hover:border-indigo-500/50 text-gray-300 hover:text-white"
+            className="flex-1 border-gray-700 bg-gray-800 hover:bg-gray-700 hover:border-gray-600 text-gray-300 hover:text-white"
           >
             <Copy className="w-4 h-4 mr-2" />
             Copy Link
@@ -99,7 +99,7 @@ const InterviewCard = ({ interview, viewDetail = false }) => {
         >
           <Button
             variant="outline"
-            className="w-full border-gray-700 hover:bg-gray-800 hover:border-indigo-500/50 text-gray-300 hover:text-white"
+            className="w-full border-gray-700 bg-gray-800 hover:bg-gray-700 hover:border-gray-600 text-gray-300 hover:text-white"
           >
             View Details
             <ArrowRight className="w-4 h-4 ml-2" />

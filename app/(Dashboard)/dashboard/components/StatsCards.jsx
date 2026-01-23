@@ -118,7 +118,7 @@ const StatsCards = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
-            className="relative overflow-hidden rounded-xl border border-gray-800 bg-gray-900/50 backdrop-blur-sm p-6"
+            className="relative overflow-hidden rounded-xl border border-gray-700 bg-gray-800 p-6"
           >
             {loading ? (
               <div className="space-y-3">
