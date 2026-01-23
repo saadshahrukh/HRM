@@ -40,6 +40,7 @@ import {
   Target,
   CheckCircle2,
   XCircle,
+  Download,
 } from "lucide-react";
 import { RiRobot2Fill } from "react-icons/ri";
 import Image from "next/image";
@@ -544,7 +545,19 @@ const CandidateFeedbackDialog = ({ candidate }) => {
                     ? "border-emerald-300 text-emerald-700"
                     : "border-rose-300 text-rose-700"
                 }`}
+                onClick={async () => {
+                  try {
+                    const { downloadInterviewPDF } = await import("@/lib/pdfExport");
+                    await downloadInterviewPDF(
+                      { feedback: feedback },
+                      { userName: displayName, userEmail: email }
+                    );
+                  } catch (error) {
+                    console.error("Failed to download PDF:", error);
+                  }
+                }}
               >
+                <Download className="w-4 h-4 mr-2" />
                 Save PDF
               </Button>
               <Button

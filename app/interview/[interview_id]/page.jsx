@@ -62,6 +62,12 @@ const onJoinInterview = async () => {
    .eq('interview_id', interview_id)
 
    console.log(Interviews[0])
+   
+   // Store candidate name in localStorage for thank you page
+   if (userName) {
+     localStorage.setItem("candidateName", userName);
+   }
+   
    setInterviewInfo({
     userName : userName,
     userEmail: userEmail,

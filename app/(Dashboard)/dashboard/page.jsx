@@ -1,26 +1,19 @@
-import React from 'react'
-import WelcomeContainer from './components/WelcomeContainer'
-import CreateOptions from './components/CreateOptions'
-import LatestInterviewsList from './components/LatestInterviewsList'
-import PdfOcrUploader from './components/PdfOcrUploader'
+"use client";
+import React from "react";
+import WelcomeContainer from "./components/WelcomeContainer";
+import CreateOptions from "./components/CreateOptions";
+import LatestInterviewsList from "./components/LatestInterviewsList";
+import StatsCards from "./components/StatsCards";
 
 const Dashboard = () => {
   return (
-   
-   <div >
-   
-    <h2 className='text-xl font-semibold py-5 ' >Dashboard</h2>
-    <CreateOptions />
-    <LatestInterviewsList />
-
-    <div>
-      <PdfOcrUploader   
-      
-      />
+    <div className="space-y-8">
+      <WelcomeContainer />
+      <StatsCards />
+      <CreateOptions />
+      <LatestInterviewsList />
     </div>
-    </div>
-    
-  )
-}
+  );
+};
 
-export default Dashboard
+export default Dashboard;

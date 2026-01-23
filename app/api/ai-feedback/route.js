@@ -3,9 +3,14 @@ import { NextResponse } from "next/server";
 import OpenAI from "openai";
 
 export async function POST(req) {
-    const {conversation} = await req.json();
+    const {conversation, eyeContact, recordingUrls} = await req.json();
 
-    const FINAL_PROMPT=FEEDBACK_PROMPT.replace('{{conversation}}', JSON.stringify(conversation))
+    let FINAL_PROMPT = FEEDBACK_PROMPT.replace('{{conversation}}', JSON.stringify(conversation));
+    
+    // Add eye contact information if available
+    if (eyeContact !== undefined) {
+        FINAL_PROMPT += `\n\nAdditional Context:\n- Average Eye Contact: ${eyeContact.toFixed(1)}%\n- Video Recordings Available: ${recordingUrls ? 'Yes' : 'No'}`;
+    }
 
     try{
     

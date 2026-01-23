@@ -5,15 +5,16 @@ import WelcomeContainer from "./dashboard/components/WelcomeContainer";
 
 function Dashboardprovider({ children }) {
   return (
-    <div className="bg-accent">
+    <div className="min-h-screen bg-gray-950">
       <SidebarProvider>
         <AppSidebar />
 
-        <div className="w-full p-5 ">
-          <SidebarTrigger />
-          <WelcomeContainer />
+        <main className="w-full p-6 lg:p-8">
+          <div className="mb-6">
+            <SidebarTrigger className="text-white hover:bg-gray-800 border-gray-800" />
+          </div>
           {children}
-        </div>
+        </main>
       </SidebarProvider>
     </div>
   );
