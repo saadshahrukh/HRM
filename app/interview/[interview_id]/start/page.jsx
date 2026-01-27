@@ -25,13 +25,10 @@ const StartInterview = () => {
   const [vapiInitialized, setVapiInitialized] = useState(false);
   const [vapiConnected, setVapiConnected] = useState(false);
   const [isCallActive, setIsCallActive] = useState(false);
-  const [hasEndedCall, setHasEndedCall] = useState(false); // Prevent auto-reconnection
-  const [shouldStartCall, setShouldStartCall] = useState(false); // Control when to start
 
   // Interview state
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [conversation, setConversation] = useState(null);
-  const [conversationArray, setConversationArray] = useState([]); // Store as array for better handling
   const [isPaused, setIsPaused] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
@@ -72,31 +69,24 @@ const StartInterview = () => {
     candidate: null,
     ai: null,
   });
-  const [isRecordingComplete, setIsRecordingComplete] = useState(false);
 
   const handleRecordingComplete = useCallback((data) => {
-    console.log("Recording complete:", data);
     setRecordingUrls((prev) => ({
       ...prev,
       [data.type]: data.url,
     }));
     toast.success(`${data.type} video uploaded successfully`);
-    
-    // Check if both recordings are done
-    if (data.type === "candidate" || data.type === "ai") {
-      setIsRecordingComplete(true);
-    }
   }, []);
 
   // Video recorder hook
-  const { stopRecording } = useVideoRecorder({
+  useVideoRecorder({
     candidateStream: candidateStreamRef.current,
     aiStream: aiStreamRef.current,
     interviewId: interview_id,
     onRecordingComplete: handleRecordingComplete,
   });
 
-  // Initialize VAPI - Only once
+  // Initialize VAPI - Fixed initialization
   useEffect(() => {
     const apiKey = process.env.NEXT_PUBLIC_VAPI_API_KEY;
     if (!apiKey) {
@@ -105,7 +95,7 @@ const StartInterview = () => {
       return;
     }
 
-    if (!vapiRef.current && !hasEndedCall) {
+    if (!vapiRef.current) {
       try {
         vapiRef.current = new Vapi(apiKey);
         setVapiInitialized(true);
@@ -117,10 +107,11 @@ const StartInterview = () => {
     }
   }, []);
 
-  // Setup media streams
+  // Setup media streams - Fixed video preview
   useEffect(() => {
     const setupMediaStreams = async () => {
       try {
+        // Get candidate's camera and microphone
         const stream = await navigator.mediaDevices.getUserMedia({
           video: {
             width: { ideal: 1280 },
@@ -135,6 +126,7 @@ const StartInterview = () => {
 
         candidateStreamRef.current = stream;
         
+        // Set video source immediately
         if (candidateVideoRef.current) {
           candidateVideoRef.current.srcObject = stream;
           candidateVideoRef.current.play().catch((err) => {
@@ -149,38 +141,32 @@ const StartInterview = () => {
       }
     };
 
-    if (interviewInfo && !hasEndedCall) {
+    if (interviewInfo) {
       setupMediaStreams();
     }
 
     return () => {
-      if (candidateStreamRef.current && hasEndedCall) {
+      // Cleanup streams
+      if (candidateStreamRef.current) {
         candidateStreamRef.current.getTracks().forEach((track) => track.stop());
       }
-      if (aiStreamRef.current && hasEndedCall) {
+      if (aiStreamRef.current) {
         aiStreamRef.current.getTracks().forEach((track) => track.stop());
       }
     };
-  }, [interviewInfo, hasEndedCall]);
+  }, [interviewInfo]);
 
   // VAPI Event Listeners - Setup before starting call
   useEffect(() => {
-    if (!vapiRef.current || !vapiInitialized || hasEndedCall) return;
+    if (!vapiRef.current || !vapiInitialized) return;
 
     const vapi = vapiRef.current;
 
     const handleMessage = (message) => {
       console.log("VAPI Message:", message);
-      
-      // Capture conversation from VAPI
-      if (message?.conversation && Array.isArray(message.conversation)) {
-        // Update conversation array
-        setConversationArray(message.conversation);
-        
-        // Also store as JSON string for API
+      if (message?.conversation) {
         const convoString = JSON.stringify(message.conversation);
         setConversation(convoString);
-        console.log("Conversation updated:", message.conversation.length, "messages");
 
         // Extract current question from conversation
         const lastMessage = message.conversation[message.conversation.length - 1];
@@ -199,7 +185,6 @@ const StartInterview = () => {
       setIsCallActive(true);
       setVapiConnected(true);
       setIsRecording(true);
-      setHasEndedCall(false);
       toast.success("Interview call connected");
     };
 
@@ -211,30 +196,18 @@ const StartInterview = () => {
       setIsSpeaking(false);
     };
 
-    const handleCallEnd = (event) => {
-      console.log("VAPI Call Ended", event);
+    const handleCallEnd = () => {
+      console.log("VAPI Call Ended");
       setIsCallActive(false);
       setVapiConnected(false);
       setIsRecording(false);
-      
-      // Only show toast if call wasn't manually ended
-      if (!hasEndedCall) {
-        toast.info("Interview call ended unexpectedly");
-      }
-      
-      // Prevent auto-reconnection if call was manually ended
-      if (hasEndedCall) {
-        console.log("Call was manually ended, preventing reconnection");
-        return;
-      }
+      toast.info("Interview call ended");
+      // Don't auto-generate feedback here, let user end it manually
     };
 
     const handleError = (error) => {
       console.error("VAPI Error:", error);
-      // Don't auto-reconnect on error if call was manually ended
-      if (!hasEndedCall) {
-        toast.error("VAPI connection error: " + (error.message || "Unknown error"));
-      }
+      toast.error("VAPI connection error: " + (error.message || "Unknown error"));
     };
 
     // Register all event listeners
@@ -254,32 +227,18 @@ const StartInterview = () => {
       vapi.off("call-end", handleCallEnd);
       vapi.off("error", handleError);
     };
-  }, [vapiInitialized, hasEndedCall]);
+  }, [vapiInitialized]);
 
-  // Start VAPI call - Only when shouldStartCall is true and hasn't ended
+  // Start VAPI call - Fixed to wait for initialization
   useEffect(() => {
-    if (
-      interviewInfo && 
-      vapiRef.current && 
-      vapiInitialized && 
-      !isCallActive && 
-      !hasEndedCall &&
-      shouldStartCall
-    ) {
+    if (interviewInfo && vapiRef.current && vapiInitialized && !isCallActive) {
+      // Small delay to ensure event listeners are set up
       const timer = setTimeout(() => {
         startCall();
-        setShouldStartCall(false); // Reset flag
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [interviewInfo, vapiInitialized, isCallActive, hasEndedCall, shouldStartCall]);
-
-  // Auto-start call when ready (only once)
-  useEffect(() => {
-    if (interviewInfo && vapiInitialized && !isCallActive && !hasEndedCall && !shouldStartCall) {
-      setShouldStartCall(true);
-    }
-  }, [interviewInfo, vapiInitialized, isCallActive, hasEndedCall]);
+  }, [interviewInfo, vapiInitialized, isCallActive]);
 
   // Timer
   useEffect(() => {
@@ -292,8 +251,8 @@ const StartInterview = () => {
   }, [isPaused, isRecording]);
 
   const startCall = async () => {
-    if (!vapiRef.current || !interviewInfo || hasEndedCall) {
-      console.error("Cannot start call: VAPI, interview info missing, or call was ended");
+    if (!vapiRef.current || !interviewInfo) {
+      console.error("Cannot start call: VAPI or interview info missing");
       return;
     }
 
@@ -361,7 +320,7 @@ Key Guidelines:
       };
 
       console.log("Starting VAPI call with options:", assistantOptions);
-      await vapiRef.current.start(assistantOptions);
+      vapiRef.current.start(assistantOptions);
     } catch (error) {
       console.error("Error starting VAPI call:", error);
       toast.error("Failed to start interview call: " + error.message);
@@ -370,47 +329,19 @@ Key Guidelines:
 
   const StopInterview = async () => {
     try {
-      console.log("Stopping interview...");
-      setHasEndedCall(true); // Prevent auto-reconnection
-      setIsCallActive(false);
-      setVapiConnected(false);
-      setIsRecording(false);
-      
-      // Stop VAPI call forcefully
-      if (vapiRef.current) {
-        try {
-          await vapiRef.current.stop();
-          console.log("VAPI stopped successfully");
-          toast.success("Interview ended");
-        } catch (error) {
-          console.error("Error stopping VAPI:", error);
-          // Force cleanup
-          vapiRef.current = null;
-        }
+      if (vapiRef.current && isCallActive) {
+        vapiRef.current.stop();
       }
       
-      // Stop video recording and wait for it
-      if (stopRecording) {
-        try {
-          await stopRecording();
-          console.log("Video recording stopped");
-        } catch (error) {
-          console.error("Error stopping video recording:", error);
-        }
-      }
-      
-      // Stop media streams
-      if (candidateStreamRef.current) {
-        candidateStreamRef.current.getTracks().forEach((track) => {
-          track.stop();
-        });
-      }
-      
-      // Wait a bit for any final uploads, then generate feedback
+      // Stop video recording - wait a bit for final chunks
       setTimeout(async () => {
+        if (candidateStreamRef.current) {
+          candidateStreamRef.current.getTracks().forEach((track) => track.stop());
+        }
+        
+        // Generate feedback and redirect
         await GenerateFeedback();
-      }, 2000);
-      
+      }, 2000); // Wait 2 seconds for recording to finalize
     } catch (error) {
       console.error("Error stopping interview:", error);
       toast.error("Error ending interview");
@@ -420,73 +351,34 @@ Key Guidelines:
   };
 
   const GenerateFeedback = async () => {
-    if (isGeneratingFeedback) {
-      console.log("Feedback generation already in progress");
-      return;
-    }
+    if (isGeneratingFeedback) return;
     
     setIsGeneratingFeedback(true);
-    console.log("Starting feedback generation...");
-    console.log("Conversation available:", !!conversation);
-    console.log("Conversation length:", conversationArray.length);
-
-    // Use conversation array if available, otherwise use string
-    let conversationToSend = conversation;
-    if (!conversationToSend && conversationArray.length > 0) {
-      conversationToSend = JSON.stringify(conversationArray);
-    }
 
     // If no conversation, still redirect to thank you page
-    if (!conversationToSend || conversationArray.length === 0) {
-      console.warn("No conversation available for feedback generation");
-      toast.warning("No conversation data available. Redirecting...");
+    if (!conversation) {
+      toast.info("Redirecting to thank you page...");
       router.push(`/interview/${interview_id}/thank-you`);
-      setIsGeneratingFeedback(false);
       return;
     }
 
     try {
       // Calculate AI metrics from conversation
-      const metrics = calculateMetrics(conversationToSend);
+      const metrics = calculateMetrics(conversation);
       setAiMetrics(metrics);
 
-      console.log("Sending to feedback API...");
-      console.log("Recording URLs:", recordingUrls);
-
       const result = await axios.post("/api/ai-feedback", {
-        conversation: conversationToSend,
+        conversation: conversation,
         eyeContact: averageEyeContact || 0,
         recordingUrls: recordingUrls,
       });
 
-      console.log("Feedback API response:", result.data);
+      const Content = result.data.content;
+      const FINAL_CONTENT = Content.replace("```json", "").replace("```", "").trim();
 
-      let feedbackData;
-      if (result.data?.content) {
-        const Content = result.data.content;
-        const FINAL_CONTENT = Content.replace(/```json/g, "").replace(/```/g, "").trim();
-        
-        try {
-          feedbackData = JSON.parse(FINAL_CONTENT);
-          console.log("Parsed feedback data:", feedbackData);
-        } catch (parseError) {
-          console.error("Failed to parse feedback JSON:", parseError);
-          console.error("Raw content:", FINAL_CONTENT);
-          throw new Error("Invalid JSON response from AI");
-        }
-      } else if (result.data?.feedback) {
-        feedbackData = result.data;
-      } else {
-        throw new Error("Invalid response format from AI");
-      }
-
-      // Ensure feedback structure is correct
-      if (!feedbackData.feedback) {
-        throw new Error("Feedback data missing 'feedback' key");
-      }
+      const feedbackData = JSON.parse(FINAL_CONTENT);
 
       // Save to database with video URLs
-      console.log("Saving feedback to database...");
       const { data, error } = await supabase.from("interview-feedback").insert([
         {
           userName: interviewInfo?.userName,
@@ -501,23 +393,14 @@ Key Guidelines:
         },
       ]);
 
-      if (error) {
-        console.error("Database error:", error);
-        throw error;
-      }
+      if (error) throw error;
 
-      console.log("Feedback saved successfully:", data);
-      toast.success("Feedback generated and saved successfully");
+      toast.success("Feedback generated successfully");
       router.push(`/interview/${interview_id}/thank-you`);
     } catch (error) {
       console.error("Failed to generate feedback:", error);
-      console.error("Error details:", {
-        message: error.message,
-        response: error.response?.data,
-        stack: error.stack,
-      });
-      toast.error("Failed to generate feedback: " + (error.message || "Unknown error"));
-      // Still redirect to thank you page
+      toast.error("Failed to generate feedback, but redirecting...");
+      // Still redirect to thank you page even if feedback fails
       router.push(`/interview/${interview_id}/thank-you`);
     } finally {
       setIsGeneratingFeedback(false);
@@ -526,12 +409,7 @@ Key Guidelines:
 
   const calculateMetrics = (conversation) => {
     try {
-      const convo = typeof conversation === 'string' ? JSON.parse(conversation) : conversation;
-      if (!Array.isArray(convo)) {
-        console.error("Conversation is not an array:", convo);
-        return { confidence: 0, communication: 0, technical: 0 };
-      }
-      
+      const convo = JSON.parse(conversation);
       const candidateMessages = convo.filter((msg) => msg.role === "user");
       if (candidateMessages.length === 0) {
         return { confidence: 0, communication: 0, technical: 0 };
@@ -616,6 +494,7 @@ Key Guidelines:
             currentStage={currentStage}
             aiMetrics={aiMetrics}
             onAddNote={(note) => {
+              // Handle notes
               console.log("Note added:", note);
             }}
           />
