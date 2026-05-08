@@ -118,13 +118,13 @@ const StatsCards = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
-            className="relative overflow-hidden rounded-xl border border-gray-700 bg-gray-800 p-6"
+            className="relative overflow-hidden rounded-xl border border-border bg-card p-6"
           >
             {loading ? (
               <div className="space-y-3">
-                <div className="h-4 bg-gray-800 rounded animate-pulse" />
-                <div className="h-8 bg-gray-800 rounded animate-pulse" />
-                <div className="h-3 bg-gray-800 rounded animate-pulse w-2/3" />
+                <div className="h-4 bg-muted rounded animate-pulse" />
+                <div className="h-8 bg-muted rounded animate-pulse" />
+                <div className="h-3 bg-muted rounded animate-pulse w-2/3" />
               </div>
             ) : (
               <>
@@ -136,11 +136,11 @@ const StatsCards = () => {
                   </div>
                 </div>
                 <div>
-                  <p className="text-gray-400 text-sm mb-1">{stat.label}</p>
-                  <p className="text-3xl font-bold text-white mb-1">
+                  <p className="text-muted-foreground text-sm mb-1">{stat.label}</p>
+                  <p className="text-3xl font-bold text-card-foreground mb-1">
                     {stat.value}
                   </p>
-                  <p className="text-xs text-gray-500">{stat.change}</p>
+                  <p className="text-xs text-muted-foreground">{stat.change}</p>
                 </div>
                 {/* Gradient Background */}
                 <div

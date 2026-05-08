@@ -6,50 +6,55 @@ import { toast } from "sonner";
 import { motion } from "framer-motion";
 import {
   User,
-  Mail,
   Bell,
-  Shield,
   Palette,
-  Globe,
+  KeyRound,
   Save,
-  Eye,
-  EyeOff,
+  Copy,
+  BookOpen,
+  ShieldCheck,
+  UserCog,
+  SlidersHorizontal,
+  BellRing,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { useTheme } from "next-themes";
+
+const tabs = [
+  { id: "profile", label: "Profile", icon: UserCog },
+  { id: "preferences", label: "Preferences", icon: SlidersHorizontal },
+  { id: "notifications", label: "Notifications", icon: BellRing },
+  { id: "api", label: "API", icon: KeyRound },
+];
 
 const Settings = () => {
   const { user, setUser } = useUser();
+  const { theme, resolvedTheme, setTheme } = useTheme();
+  const [activeTab, setActiveTab] = useState("profile");
   const [loading, setLoading] = useState(false);
-  const [showApiKey, setShowApiKey] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [apiTokenName, setApiTokenName] = useState("");
+  const [apiTokens, setApiTokens] = useState([]);
 
-  // Profile Settings
   const [profileData, setProfileData] = useState({
     name: user?.name || "",
     email: user?.email || "",
   });
 
-  // Notification Settings
   const [notifications, setNotifications] = useState({
     emailNotifications: true,
-    interviewReminders: true,
+    realtimeAlerts: true,
     candidateFeedback: true,
     weeklyReports: false,
   });
 
-  // Application Settings
-  const [appSettings, setAppSettings] = useState({
-    theme: "dark",
-    language: "en",
+  const [preferenceSettings, setPreferenceSettings] = useState({
+    language: "en-US",
     timezone: "UTC",
+    autoSyncIntegrations: true,
+    liveDashboardRefresh: true,
   });
 
   useEffect(() => {
@@ -60,6 +65,20 @@ const Settings = () => {
       });
     }
   }, [user]);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    const localSettings = localStorage.getItem("hrmSettings");
+    if (!localSettings) return;
+    const parsed = JSON.parse(localSettings);
+    if (parsed?.theme) setTheme(parsed.theme);
+    if (parsed?.notifications) setNotifications(parsed.notifications);
+    if (parsed?.preferences) setPreferenceSettings(parsed.preferences);
+    if (Array.isArray(parsed?.apiTokens)) setApiTokens(parsed.apiTokens);
+  }, [setTheme]);
 
   const handleSaveProfile = async () => {
     try {
@@ -83,310 +102,288 @@ const Settings = () => {
     }
   };
 
-  const handleSaveNotifications = () => {
-    // Save to localStorage or database
-    localStorage.setItem("notificationSettings", JSON.stringify(notifications));
-    toast.success("Notification settings saved");
+  const saveSystemSettings = async () => {
+    const payload = {
+      theme,
+      notifications,
+      preferences: preferenceSettings,
+      apiTokens,
+      updated_at: new Date().toISOString(),
+    };
+    localStorage.setItem("hrmSettings", JSON.stringify(payload));
+
+    try {
+      if (user?.email) {
+        await supabase.from("user_settings").upsert(
+          {
+            user_email: user.email,
+            ...payload,
+          },
+          { onConflict: "user_email" }
+        );
+      }
+      toast.success("Settings saved");
+    } catch (error) {
+      console.error("Failed to save settings to Supabase:", error);
+      toast.success("Saved locally. Supabase table can be applied via migration.");
+    }
   };
 
-  const handleSaveAppSettings = () => {
-    localStorage.setItem("appSettings", JSON.stringify(appSettings));
-    toast.success("Application settings saved");
+  const generateApiToken = () => {
+    if (!apiTokenName.trim()) {
+      toast.error("Please enter token name");
+      return;
+    }
+    const secret = `hrm_${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`;
+    const token = {
+      id: crypto.randomUUID(),
+      name: apiTokenName.trim(),
+      token: secret,
+      createdAt: new Date().toISOString(),
+      lastUsed: "Never",
+    };
+    const updated = [token, ...apiTokens].slice(0, 5);
+    setApiTokens(updated);
+    setApiTokenName("");
+    toast.success("API token generated");
   };
+
+  const copyText = async (value) => {
+    await navigator.clipboard.writeText(value);
+    toast.success("Copied");
+  };
+
+  const activeTheme = resolvedTheme || theme || "dark";
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
+    <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-white mb-2">Settings</h1>
-        <p className="text-gray-400">
-          Manage your account settings and preferences
+        <h1 className="text-3xl font-bold text-foreground mb-2">Settings</h1>
+        <p className="text-muted-foreground">
+          Professional controls for account, real-time behavior, and APIs
         </p>
       </div>
 
-      {/* Profile Settings */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="rounded-xl border border-gray-700 bg-gray-800 p-6"
-      >
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-lg bg-indigo-500/10 flex items-center justify-center">
-            <User className="w-5 h-5 text-indigo-400" />
-          </div>
-          <div>
-            <h2 className="text-xl font-bold text-white">Profile Settings</h2>
-            <p className="text-sm text-gray-400">
-              Update your personal information
-            </p>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="name" className="text-gray-300 mb-2 block">
-              Full Name
-            </Label>
-            <Input
-              id="name"
-              value={profileData.name}
-              onChange={(e) =>
-                setProfileData({ ...profileData, name: e.target.value })
-              }
-              className="bg-gray-900/50 border-gray-700 text-white"
-              placeholder="Enter your full name"
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="email" className="text-gray-300 mb-2 block">
-              Email Address
-            </Label>
-            <Input
-              id="email"
-              value={profileData.email}
-              disabled
-              className="bg-gray-900/50 border-gray-700 text-gray-500 cursor-not-allowed"
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              Email cannot be changed
-            </p>
-          </div>
-
-          <Button
-            onClick={handleSaveProfile}
-            disabled={loading}
-            className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
-          >
-            <Save className="w-4 h-4 mr-2" />
-            Save Changes
-          </Button>
-        </div>
-      </motion.div>
-
-      {/* Notification Settings */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="rounded-xl border border-gray-700 bg-gray-800 p-6"
-      >
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
-            <Bell className="w-5 h-5 text-blue-400" />
-          </div>
-          <div>
-            <h2 className="text-xl font-bold text-white">
-              Notification Settings
-            </h2>
-            <p className="text-sm text-gray-400">
-              Control how you receive notifications
-            </p>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          {Object.entries(notifications).map(([key, value]) => (
-            <div
-              key={key}
-              className="flex items-center justify-between p-4 rounded-lg bg-gray-900/50 border border-gray-700"
+      <div className="flex flex-wrap gap-2 rounded-xl border border-border bg-card p-2">
+        {tabs.map((tab) => {
+          const Icon = tab.icon;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm transition-colors ${
+                activeTab === tab.id
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:bg-muted"
+              }`}
             >
-              <div>
-                <Label className="text-white font-medium">
-                  {key
-                    .replace(/([A-Z])/g, " $1")
-                    .replace(/^./, (str) => str.toUpperCase())}
-                </Label>
-                <p className="text-xs text-gray-400 mt-1">
-                  {key === "emailNotifications" &&
-                    "Receive email notifications for important updates"}
-                  {key === "interviewReminders" &&
-                    "Get reminders before scheduled interviews"}
-                  {key === "candidateFeedback" &&
-                    "Notify when candidate completes interview"}
-                  {key === "weeklyReports" &&
-                    "Receive weekly summary reports"}
-                </p>
-              </div>
-              <button
-                onClick={() =>
-                  setNotifications({ ...notifications, [key]: !value })
-                }
-                className={`relative w-12 h-6 rounded-full transition-colors ${
-                  value ? "bg-indigo-600" : "bg-gray-700"
-                }`}
-              >
-                <span
-                  className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
-                    value ? "translate-x-6" : "translate-x-0"
-                  }`}
-                />
-              </button>
+              <Icon className="h-4 w-4" />
+              {tab.label}
+            </button>
+          );
+        })}
+      </div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="rounded-xl border border-border bg-card p-6"
+      >
+        {activeTab === "profile" && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <User className="h-5 w-5 text-primary" />
+              <h2 className="text-lg font-semibold text-card-foreground">Profile Settings</h2>
             </div>
-          ))}
-
-          <Button
-            onClick={handleSaveNotifications}
-            className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
-          >
-            <Save className="w-4 h-4 mr-2" />
-            Save Notification Settings
-          </Button>
-        </div>
-      </motion.div>
-
-      {/* Application Settings */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="rounded-xl border border-gray-700 bg-gray-800 p-6"
-      >
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
-            <Palette className="w-5 h-5 text-purple-400" />
-          </div>
-          <div>
-            <h2 className="text-xl font-bold text-white">
-              Application Settings
-            </h2>
-            <p className="text-sm text-gray-400">
-              Customize your application experience
-            </p>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <div>
-            <Label className="text-gray-300 mb-2 block">Theme</Label>
-            <Select
-              value={appSettings.theme}
-              onValueChange={(value) =>
-                setAppSettings({ ...appSettings, theme: value })
-              }
-            >
-              <SelectTrigger className="bg-gray-900/50 border-gray-700 text-white">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-gray-800 border-gray-700">
-                <SelectItem value="dark" className="text-white">
-                  Dark
-                </SelectItem>
-                <SelectItem value="light" className="text-white">
-                  Light
-                </SelectItem>
-                <SelectItem value="system" className="text-white">
-                  System
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label className="text-gray-300 mb-2 block">Language</Label>
-            <Select
-              value={appSettings.language}
-              onValueChange={(value) =>
-                setAppSettings({ ...appSettings, language: value })
-              }
-            >
-              <SelectTrigger className="bg-gray-900/50 border-gray-700 text-white">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-gray-800 border-gray-700">
-                <SelectItem value="en" className="text-white">
-                  English
-                </SelectItem>
-                <SelectItem value="es" className="text-white">
-                  Spanish
-                </SelectItem>
-                <SelectItem value="fr" className="text-white">
-                  French
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label className="text-gray-300 mb-2 block">Timezone</Label>
-            <Select
-              value={appSettings.timezone}
-              onValueChange={(value) =>
-                setAppSettings({ ...appSettings, timezone: value })
-              }
-            >
-              <SelectTrigger className="bg-gray-900/50 border-gray-700 text-white">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-gray-800 border-gray-700">
-                <SelectItem value="UTC" className="text-white">
-                  UTC
-                </SelectItem>
-                <SelectItem value="EST" className="text-white">
-                  EST
-                </SelectItem>
-                <SelectItem value="PST" className="text-white">
-                  PST
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <Button
-            onClick={handleSaveAppSettings}
-            className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
-          >
-            <Save className="w-4 h-4 mr-2" />
-            Save Application Settings
-          </Button>
-        </div>
-      </motion.div>
-
-      {/* API Key Section */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="rounded-xl border border-gray-700 bg-gray-800 p-6"
-      >
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center">
-            <Shield className="w-5 h-5 text-green-400" />
-          </div>
-          <div>
-            <h2 className="text-xl font-bold text-white">API Configuration</h2>
-            <p className="text-sm text-gray-400">
-              Manage your API keys and security settings
-            </p>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <div>
-            <Label className="text-gray-300 mb-2 block">VAPI API Key</Label>
-            <div className="relative">
+            <div>
+              <Label htmlFor="name" className="mb-2 block">
+                Full Name
+              </Label>
               <Input
-                type={showApiKey ? "text" : "password"}
-                value={process.env.NEXT_PUBLIC_VAPI_API_KEY?.substring(0, 20) + "..." || "Not configured"}
-                disabled
-                className="bg-gray-900/50 border-gray-700 text-gray-400 pr-10"
+                id="name"
+                value={profileData.name}
+                onChange={(e) =>
+                  setProfileData({ ...profileData, name: e.target.value })
+                }
+                placeholder="Enter your full name"
               />
-              <button
-                onClick={() => setShowApiKey(!showApiKey)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
-              >
-                {showApiKey ? (
-                  <EyeOff className="w-4 h-4" />
-                ) : (
-                  <Eye className="w-4 h-4" />
-                )}
-              </button>
             </div>
-            <p className="text-xs text-gray-500 mt-1">
-              API keys are configured in environment variables
-            </p>
+            <div>
+              <Label htmlFor="email" className="mb-2 block">
+                Email Address
+              </Label>
+              <Input id="email" value={profileData.email} disabled />
+            </div>
+            <Button onClick={handleSaveProfile} disabled={loading}>
+              <Save className="mr-2 h-4 w-4" />
+              Save Profile
+            </Button>
           </div>
-        </div>
+        )}
+
+        {activeTab === "preferences" && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <Palette className="h-5 w-5 text-primary" />
+              <h2 className="text-lg font-semibold text-card-foreground">UI and App Preferences</h2>
+            </div>
+            <div>
+              <Label className="mb-2 block">Theme</Label>
+              <div className="flex gap-2">
+                {["light", "dark", "system"].map((mode) => (
+                  <button
+                    key={mode}
+                    type="button"
+                    onClick={() => setTheme(mode)}
+                    className={`rounded-md border px-3 py-2 text-sm capitalize ${
+                      mounted && (mode === "system" ? theme === "system" : activeTheme === mode)
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border hover:bg-muted"
+                    }`}
+                  >
+                    {mode}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="grid gap-3 md:grid-cols-2">
+              <Input
+                value={preferenceSettings.language}
+                onChange={(e) =>
+                  setPreferenceSettings((prev) => ({ ...prev, language: e.target.value }))
+                }
+                placeholder="Language e.g. en-US"
+              />
+              <Input
+                value={preferenceSettings.timezone}
+                onChange={(e) =>
+                  setPreferenceSettings((prev) => ({ ...prev, timezone: e.target.value }))
+                }
+                placeholder="Timezone e.g. UTC"
+              />
+            </div>
+            <div className="space-y-2">
+              {[
+                ["autoSyncIntegrations", "Auto sync integrations in real-time"],
+                ["liveDashboardRefresh", "Live dashboard refresh"],
+              ].map(([key, label]) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() =>
+                    setPreferenceSettings((prev) => ({ ...prev, [key]: !prev[key] }))
+                  }
+                  className="flex w-full items-center justify-between rounded-lg border border-border bg-background px-4 py-3 text-sm"
+                >
+                  <span>{label}</span>
+                  <span className="text-primary">
+                    {preferenceSettings[key] ? "Enabled" : "Disabled"}
+                  </span>
+                </button>
+              ))}
+            </div>
+            <Button onClick={saveSystemSettings}>
+              <Save className="mr-2 h-4 w-4" />
+              Save Preferences
+            </Button>
+          </div>
+        )}
+
+        {activeTab === "notifications" && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <Bell className="h-5 w-5 text-primary" />
+              <h2 className="text-lg font-semibold text-card-foreground">Notification Controls</h2>
+            </div>
+            {Object.entries(notifications).map(([key, value]) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setNotifications({ ...notifications, [key]: !value })}
+                className="flex w-full items-center justify-between rounded-lg border border-border bg-background px-4 py-3 text-left"
+              >
+                <span className="text-sm capitalize">{key.replace(/([A-Z])/g, " $1")}</span>
+                <span className={`text-sm ${value ? "text-emerald-600" : "text-muted-foreground"}`}>
+                  {value ? "Enabled" : "Disabled"}
+                </span>
+              </button>
+            ))}
+            <Button onClick={saveSystemSettings}>
+              <Save className="mr-2 h-4 w-4" />
+              Save Notifications
+            </Button>
+          </div>
+        )}
+
+        {activeTab === "api" && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <KeyRound className="h-5 w-5 text-primary" />
+              <h2 className="text-lg font-semibold text-card-foreground">API and Webhook Access</h2>
+            </div>
+            <div className="rounded-lg border border-border bg-background p-4 text-sm text-muted-foreground space-y-2">
+              <p className="flex items-center gap-2 text-foreground font-medium">
+                <BookOpen className="h-4 w-4 text-primary" />
+                API Documentation
+              </p>
+              <p>
+                Use your token in the `Authorization: Bearer YOUR_TOKEN` header to call HRM APIs and trigger VAPI interview workflows.
+              </p>
+              <div className="rounded-md border border-border bg-muted/40 p-3 font-mono text-xs overflow-x-auto">
+                GET /api/public/v1/interviews
+                <br />
+                POST /api/public/v1/interviews/:id/start-vapi
+                <br />
+                GET /api/public/v1/interviews/:id/feedback
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-border bg-background p-4 space-y-3">
+              <p className="flex items-center gap-2 text-sm font-medium text-foreground">
+                <ShieldCheck className="h-4 w-4 text-emerald-600" />
+                Generate API Token
+              </p>
+              <div className="flex gap-2">
+                <Input
+                  value={apiTokenName}
+                  onChange={(e) => setApiTokenName(e.target.value)}
+                  placeholder="Token name e.g. ATS Integration"
+                />
+                <Button onClick={generateApiToken}>Generate</Button>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              {apiTokens.map((token) => (
+                <div key={token.id} className="rounded-lg border border-border bg-background p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <div>
+                      <p className="text-sm font-medium text-foreground">{token.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        Created {new Date(token.createdAt).toLocaleString()} - Last used: {token.lastUsed}
+                      </p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      className="border-border"
+                      onClick={() => copyText(token.token)}
+                    >
+                      <Copy className="mr-2 h-4 w-4" />
+                      Copy Token
+                    </Button>
+                  </div>
+                  <p className="mt-2 truncate rounded bg-muted px-2 py-1 font-mono text-xs text-muted-foreground">
+                    {token.token}
+                  </p>
+                </div>
+              ))}
+            </div>
+            <Button onClick={saveSystemSettings}>
+              <Save className="mr-2 h-4 w-4" />
+              Save API Configuration
+            </Button>
+          </div>
+        )}
       </motion.div>
     </div>
   );

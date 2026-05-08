@@ -39,8 +39,8 @@ const CreateOptions = () => {
             <div
               className={`relative h-full flex flex-col overflow-hidden rounded-xl border p-6 transition-all duration-300 ${
                 option.available
-                  ? "border-gray-700 bg-gray-800/50 hover:border-indigo-500/50 hover:shadow-[0_0_20px_rgba(99,102,241,0.1)]"
-                  : "border-gray-800 bg-gray-900/40 opacity-70"
+                  ? "border-border bg-card hover:border-primary/50 hover:shadow-[0_0_20px_rgba(99,102,241,0.12)]"
+                  : "border-border bg-muted/40 opacity-80"
               }`}
             >
               {/* 2. Added a subtle glow instead of solid blobs */}
@@ -54,19 +54,19 @@ const CreateOptions = () => {
                   className={`w-12 h-12 flex items-center justify-center rounded-lg ${
                     option.available
                       ? "bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg shadow-indigo-500/20"
-                      : "bg-gray-700 text-gray-500"
+                      : "bg-muted text-muted-foreground"
                   }`}
                 >
-                  <Icon className={`w-6 h-6 ${option.available ? "text-white" : "text-gray-400"}`} />
+                  <Icon className={`w-6 h-6 ${option.available ? "text-white" : "text-muted-foreground"}`} />
                 </div>
               </div>
 
               {/* 4. Content Area */}
               <div className="flex-grow relative z-10">
-                <h3 className={`text-xl font-bold mb-2 ${option.available ? "text-white" : "text-gray-500"}`}>
+                <h3 className={`text-xl font-bold mb-2 ${option.available ? "text-card-foreground" : "text-muted-foreground"}`}>
                   {option.title}
                 </h3>
-                <p className={`text-sm mb-6 ${option.available ? "text-gray-400" : "text-gray-600"}`}>
+                <p className={`text-sm mb-6 ${option.available ? "text-muted-foreground" : "text-muted-foreground/80"}`}>
                   {option.description}
                 </p>
               </div>
@@ -76,13 +76,13 @@ const CreateOptions = () => {
                 {option.available ? (
                   <Link
                     href={option.href}
-                    className="inline-flex items-center gap-2 text-indigo-400 hover:text-indigo-300 transition-colors text-sm font-semibold group/link"
+                    className="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-colors text-sm font-semibold group/link"
                   >
                     Get Started
                     <ArrowRight className="w-4 h-4 transition-transform group-hover/link:translate-x-1" />
                   </Link>
                 ) : (
-                  <span className="text-gray-600 text-xs font-medium uppercase tracking-wider">
+                  <span className="text-muted-foreground text-xs font-medium uppercase tracking-wider">
                     Coming Soon
                   </span>
                 )}

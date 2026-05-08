@@ -28,7 +28,7 @@ const InterviewCard = ({ interview, viewDetail = false }) => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="group relative overflow-hidden rounded-xl border border-gray-700 bg-gray-800 p-6 transition-all duration-300 hover:border-indigo-500/50 hover:shadow-lg"
+      className="group relative overflow-hidden rounded-xl border border-border bg-card p-6 transition-all duration-300 hover:border-primary/40 hover:shadow-lg"
     >
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
@@ -39,10 +39,10 @@ const InterviewCard = ({ interview, viewDetail = false }) => {
             </span>
           </div>
           <div>
-            <h3 className="font-bold text-lg text-white group-hover:text-indigo-400 transition-colors">
+            <h3 className="font-bold text-lg text-card-foreground group-hover:text-primary transition-colors">
               {interview?.jobPosition || "Interview"}
             </h3>
-            <div className="flex items-center gap-2 text-xs text-gray-400 mt-1">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
               <Calendar className="w-3 h-3" />
               <span>{moment(interview?.created_at).format("MMM Do, YYYY")}</span>
             </div>
@@ -53,16 +53,16 @@ const InterviewCard = ({ interview, viewDetail = false }) => {
       {/* Details */}
       <div className="space-y-3 mb-6">
         <div className="flex items-center justify-between text-sm">
-          <div className="flex items-center gap-2 text-gray-400">
+          <div className="flex items-center gap-2 text-muted-foreground">
             <Clock className="w-4 h-4" />
             <span>Duration</span>
           </div>
-          <span className="text-white font-medium">{interview?.duration || "N/A"}</span>
+          <span className="text-card-foreground font-medium">{interview?.duration || "N/A"}</span>
         </div>
 
         {viewDetail && interview?.["interview-feedback"] && (
           <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center gap-2 text-gray-400">
+            <div className="flex items-center gap-2 text-muted-foreground">
               <Users className="w-4 h-4" />
               <span>Candidates</span>
             </div>
@@ -79,7 +79,7 @@ const InterviewCard = ({ interview, viewDetail = false }) => {
           <Button
             variant="outline"
             onClick={onCopyLink}
-            className="flex-1 border-gray-700 bg-gray-800 hover:bg-gray-700 hover:border-gray-600 text-gray-300 hover:text-white"
+            className="flex-1 border-border bg-background hover:bg-muted text-foreground"
           >
             <Copy className="w-4 h-4 mr-2" />
             Copy Link
@@ -99,7 +99,7 @@ const InterviewCard = ({ interview, viewDetail = false }) => {
         >
           <Button
             variant="outline"
-            className="w-full border-gray-700 bg-gray-800 hover:bg-gray-700 hover:border-gray-600 text-gray-300 hover:text-white"
+            className="w-full border-border bg-background hover:bg-muted text-foreground"
           >
             View Details
             <ArrowRight className="w-4 h-4 ml-2" />

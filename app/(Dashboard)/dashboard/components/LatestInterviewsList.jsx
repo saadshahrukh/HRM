@@ -40,17 +40,17 @@ const LatestInterviewsList = () => {
     <div className="my-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2">
+          <h2 className="text-2xl font-bold text-foreground mb-2">
             Recent Interviews
           </h2>
-          <p className="text-gray-400 text-sm">
+          <p className="text-muted-foreground text-sm">
             Your latest interview sessions
           </p>
         </div>
         <Link href="/all-interview">
           <Button
             variant="ghost"
-            className="text-gray-400 bg-gray-800/50 hover:bg-gray-800 hover:text-white border border-gray-700/50"
+            className="text-muted-foreground bg-muted/30 hover:bg-muted hover:text-foreground border border-border"
           >
             View All
             <ArrowRight className="w-4 h-4 ml-2" />
@@ -63,7 +63,7 @@ const LatestInterviewsList = () => {
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="h-64 rounded-xl border border-gray-700 bg-gray-800/80 animate-pulse"
+              className="h-64 rounded-xl border border-border bg-card animate-pulse"
             />
           ))}
         </div>
@@ -71,16 +71,16 @@ const LatestInterviewsList = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col gap-4 items-center justify-center bg-gray-800/80 border border-gray-700 rounded-xl p-12 shadow-lg"
+          className="flex flex-col gap-4 items-center justify-center bg-card border border-border rounded-xl p-12 shadow-lg"
         >
           <div className="w-16 h-16 rounded-full bg-indigo-500/10 flex items-center justify-center">
             <Camera className="h-8 w-8 text-indigo-400" />
           </div>
           <div className="text-center">
-            <h3 className="text-lg font-semibold text-white mb-2">
+              <h3 className="text-lg font-semibold text-card-foreground mb-2">
               No Interviews Yet
             </h3>
-            <p className="text-gray-400 text-sm mb-6">
+              <p className="text-muted-foreground text-sm mb-6">
               Create your first interview to get started
             </p>
             <Link href="/dashboard/create-interview">

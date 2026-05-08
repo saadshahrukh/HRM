@@ -1,19 +1,15 @@
 "use client";
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { 
-  Plug, 
-  Check, 
-  X, 
-  ExternalLink, 
-  Zap, 
-  Mail, 
+import {
+  Plug,
+  Check,
+  X,
+  Zap,
+  Mail,
   Calendar,
-  MessageSquare,
   Slack,
-  Github,
-  Linkedin,
-  Webhook
+  Webhook,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -103,8 +99,8 @@ const Integrations = () => {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-white mb-2">Integrations</h1>
-        <p className="text-gray-400">
+        <h1 className="text-3xl font-bold text-foreground mb-2">Integrations</h1>
+        <p className="text-muted-foreground">
           Connect third-party services to enhance your interview workflow
         </p>
       </div>
@@ -124,8 +120,8 @@ const Integrations = () => {
               transition={{ delay: index * 0.1 }}
               className={`relative overflow-hidden rounded-xl border ${
                 isConnected
-                  ? "border-indigo-500 bg-gray-800"
-                  : "border-gray-700 bg-gray-800"
+                  ? "border-primary/40 bg-card"
+                  : "border-border bg-card"
               } p-6`}
             >
               {/* Header */}
@@ -137,10 +133,10 @@ const Integrations = () => {
                     <Icon className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-white">
+                    <h3 className="text-xl font-bold text-card-foreground">
                       {integration.name}
                     </h3>
-                    <p className="text-sm text-gray-400">
+                    <p className="text-sm text-muted-foreground">
                       {integration.description}
                     </p>
                   </div>
@@ -160,7 +156,7 @@ const Integrations = () => {
                 <div className="space-y-3 mb-4">
                   {integration.fields.map((field) => (
                     <div key={field.key}>
-                      <label className="text-sm text-gray-400 mb-1 block">
+                      <label className="text-sm text-muted-foreground mb-1 block">
                         {field.label}
                       </label>
                       <Input
@@ -174,7 +170,7 @@ const Integrations = () => {
                           )
                         }
                         placeholder={`Enter ${field.label.toLowerCase()}`}
-                        className="bg-gray-900/50 border-gray-700 text-white placeholder-gray-500"
+                        className="bg-background border-border text-foreground placeholder:text-muted-foreground"
                       />
                     </div>
                   ))}
@@ -183,8 +179,8 @@ const Integrations = () => {
 
               {/* Connection Status */}
               {isConnected && (
-                <div className="mb-4 p-3 bg-gray-900/50 rounded-lg border border-gray-700">
-                  <div className="flex items-center gap-2 text-sm text-gray-300">
+                <div className="mb-4 p-3 bg-background rounded-lg border border-border">
+                  <div className="flex items-center gap-2 text-sm text-foreground">
                     <Check className="w-4 h-4 text-green-400" />
                     <span>
                       {integration.name} is connected and active
@@ -223,13 +219,13 @@ const Integrations = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="rounded-xl border border-gray-700 bg-gray-800 p-6"
+        className="rounded-xl border border-border bg-card p-6"
       >
-        <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+        <h3 className="text-lg font-semibold text-card-foreground mb-4 flex items-center gap-2">
           <Zap className="w-5 h-5 text-indigo-400" />
           How Integrations Work
         </h3>
-        <div className="space-y-3 text-gray-400 text-sm">
+        <div className="space-y-3 text-muted-foreground text-sm">
           <div className="flex items-start gap-3">
             <div className="w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
               <span className="text-indigo-400 text-xs font-bold">1</span>
