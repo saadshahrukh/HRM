@@ -3,10 +3,20 @@ import { useUser } from "@/app/Provider";
 import Image from "next/image";
 import React from "react";
 import { motion } from "framer-motion";
-import { Sparkles, TrendingUp, Users, Calendar } from "lucide-react";
+import { Sparkles } from "lucide-react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+
+function getGreeting() {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  return "Good evening";
+}
 
 const WelcomeContainer = () => {
   const { user } = useUser();
+  const firstName = user?.name?.split(" ")?.[0] || "Admin";
 
   return (
     <motion.div
@@ -24,15 +34,20 @@ const WelcomeContainer = () => {
           <div className="flex items-center gap-2 mb-2">
             <Sparkles className="w-5 h-5 text-yellow-300" />
             <span className="text-sm font-medium text-indigo-100">
-              Welcome back!
+              {getGreeting()}, {firstName}
             </span>
           </div>
           <h1 className="text-3xl md:text-4xl font-bold mb-2">
-            {user?.name ? `Hello, ${user.name}!` : "Welcome to AI HRM"}
+            Your hiring command center
           </h1>
-          <p className="text-indigo-100 text-lg">
-            AI-Driven Interviews, Hassle-Free Hiring Process
+          <p className="mb-4 text-indigo-100 text-lg">
+            Jobs, candidates, AI interviews, and reports in one place.
           </p>
+          <Link href="/jobs/new">
+            <Button className="bg-white font-semibold text-indigo-700 hover:bg-indigo-50">
+              + Post New Job
+            </Button>
+          </Link>
         </div>
 
         {user?.picture && (

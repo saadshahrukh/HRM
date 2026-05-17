@@ -66,11 +66,11 @@ const AllInterview = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">
-            All Interviews
+          <h1 className="text-3xl font-bold text-foreground mb-2">
+            Completed Interviews
           </h1>
-          <p className="text-gray-400">
-            Manage and view all your interview sessions
+          <p className="text-muted-foreground">
+            Archive with AI scores, transcripts, and hiring recommendations
           </p>
         </div>
         <Link href="/dashboard/create-interview">

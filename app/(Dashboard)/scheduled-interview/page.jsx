@@ -46,11 +46,11 @@ const ScheduledInterview = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">
+          <h1 className="text-3xl font-bold text-foreground mb-2">
             Scheduled Interviews
           </h1>
-          <p className="text-gray-400">
-            Interviews with candidate feedback and analysis
+          <p className="text-muted-foreground">
+            Upcoming Vapi sessions — reschedule, cancel, or share links
           </p>
         </div>
         <Link href="/dashboard/create-interview">

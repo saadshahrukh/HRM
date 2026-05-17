@@ -1,55 +1,11 @@
 import {
   BriefcaseBusinessIcon,
-  Calendar,
   Code,
-  LayoutDashboardIcon,
-  List,
   PuzzleIcon,
-  Settings,
   User2Icon,
-  WalletCards,
-  Plug,
 } from "lucide-react";
 
-export const SideBarOptions = [
-  {
-    name: "Dashboard",
-    icon: LayoutDashboardIcon,
-    path: "/dashboard",
-  },
-  {
-    name: "Interviews",
-    icon: Calendar,
-    path: "/interviews",
-    children: [
-      {
-        name: "All Interviews",
-        icon: List,
-        path: "/all-interview",
-      },
-      {
-        name: "Scheduled Interviews",
-        icon: Calendar,
-        path: "/scheduled-interview",
-      },
-    ],
-  },
-  {
-    name: "Billing",
-    icon: WalletCards,
-    path: "/billing",
-  },
-  {
-    name: "Integrations",
-    icon: Plug,
-    path: "/integrations",
-  },
-  {
-    name: "Settings",
-    icon: Settings,
-    path: "/settings",
-  },
-];
+export { SideBarOptions } from "./navigation";
 
 export const InterviewType = [
   {
