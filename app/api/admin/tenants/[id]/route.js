@@ -62,3 +62,39 @@ export async function DELETE(request, { params }) {
     return NextResponse.json({ success: false, message: error.message }, { status: 500 });
   }
 }
+
+export async function PUT(request, { params }) {
+  const adminUser = await verifyAdmin(request);
+  if (!adminUser) {
+    return NextResponse.json({ success: false, message: 'Forbidden' }, { status: 403 });
+  }
+
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_KEY
+  );
+
+  const { id } = params;
+  try {
+    const { plan } = await request.json();
+    if (!plan) {
+      return NextResponse.json({ success: false, message: 'Plan is required' }, { status: 400 });
+    }
+
+    const { data: org, error: orgUpdateError } = await supabase
+      .from('organizations')
+      .update({ plan })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (orgUpdateError) throw orgUpdateError;
+
+    console.log(`[AUDIT] Admin ${adminUser.email} updated tenant ${org.name} (${id}) plan to ${plan}.`);
+
+    return NextResponse.json({ success: true, message: 'Tenant plan updated successfully.', tenant: org });
+  } catch (error) {
+    console.error("PUT Tenant error:", error);
+    return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+  }
+}

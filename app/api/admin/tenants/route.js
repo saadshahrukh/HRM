@@ -61,7 +61,8 @@ export async function GET(request) {
         status: org.status || 'active',
         created_at: org.created_at,
         ceo_email: ceo ? ceo.email : 'N/A',
-        user_count: orgUsers.length
+        user_count: orgUsers.length,
+        plan: org.plan || 'basic'
       };
     });
 
@@ -85,7 +86,7 @@ export async function POST(request) {
 
   try {
     const body = await request.json();
-    const { name, ceoEmail, initialCredits = 10 } = body;
+    const { name, ceoEmail, initialCredits = 10, plan = 'basic' } = body;
 
     if (!name || !ceoEmail) {
       return NextResponse.json({ success: false, message: 'Name and CEO Email are required.' }, { status: 400 });
@@ -109,7 +110,8 @@ export async function POST(request) {
         {
           name,
           credits_remaining: initialCredits,
-          status: 'active'
+          status: 'active',
+          plan
         }
       ])
       .select()
@@ -142,7 +144,7 @@ export async function POST(request) {
     }
 
     // Log admin action (Console / DB log for MVP)
-    console.log(`[AUDIT] Admin ${adminUser.email} created tenant ${name} (${org.id}) for CEO ${ceoEmail} with ${initialCredits} credits.`);
+    console.log(`[AUDIT] Admin ${adminUser.email} created tenant ${name} (${org.id}) under plan ${plan} for CEO ${ceoEmail} with ${initialCredits} credits.`);
 
     return NextResponse.json({ success: true, message: 'Tenant successfully registered.', tenant: org });
   } catch (error) {

@@ -46,6 +46,11 @@ const SuperAdminDashboard = () => {
   const [adjustingTenant, setAdjustingTenant] = useState(null);
   const [creditAmount, setCreditAmount] = useState(10);
 
+  // Plan level state
+  const [newTenantPlan, setNewTenantPlan] = useState("basic");
+  const [adjustingTenantPlan, setAdjustingTenantPlan] = useState(null);
+  const [tenantPlanValue, setTenantPlanValue] = useState("basic");
+
   useEffect(() => {
     if (user === null) {
       router.push("/super-admin/login");
@@ -88,7 +93,8 @@ const SuperAdminDashboard = () => {
       const response = await axios.post("/api/admin/tenants", {
         name: newTenantName,
         ceoEmail: newCeoEmail,
-        initialCredits
+        initialCredits,
+        plan: newTenantPlan
       });
 
       if (response.data.success) {
@@ -129,6 +135,30 @@ const SuperAdminDashboard = () => {
     } catch (err) {
       console.error(err);
       toast.error("Failed to update tenant credits.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleUpdatePlan = async (e) => {
+    e.preventDefault();
+    if (!adjustingTenantPlan) return;
+    setSubmitting(true);
+    try {
+      const response = await axios.put(`/api/admin/tenants/${adjustingTenantPlan.id}`, {
+        plan: tenantPlanValue
+      });
+
+      if (response.data.success) {
+        toast.success(`Plan successfully updated for ${adjustingTenantPlan.name}!`);
+        setAdjustingTenantPlan(null);
+        fetchTenants();
+      } else {
+        toast.error(response.data.message || "Failed to update tenant plan.");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to update tenant plan.");
     } finally {
       setSubmitting(false);
     }
@@ -272,6 +302,7 @@ const SuperAdminDashboard = () => {
                   <tr>
                     <th className="px-6 py-4">Tenant Company</th>
                     <th className="px-6 py-4">CEO Contact</th>
+                    <th className="px-6 py-4">Plan Tier</th>
                     <th className="px-6 py-4">Status</th>
                     <th className="px-6 py-4 text-center">Active Members</th>
                     <th className="px-6 py-4 text-center">Remaining Credits</th>
@@ -295,6 +326,17 @@ const SuperAdminDashboard = () => {
                           </div>
                         </td>
                         <td className="px-6 py-5">{t.ceo_email}</td>
+                        <td className="px-6 py-5">
+                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase ${
+                            t.plan === "enterprise" 
+                              ? "bg-purple-500/10 text-purple-400 border border-purple-500/20" 
+                              : t.plan === "pro" 
+                              ? "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20" 
+                              : "bg-slate-500/10 text-slate-400 border border-slate-500/20"
+                          }`}>
+                            {t.plan || "basic"}
+                          </span>
+                        </td>
                         <td className="px-6 py-5">
                           <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
                             t.status === "active" 
@@ -321,6 +363,16 @@ const SuperAdminDashboard = () => {
                               className="bg-slate-900 hover:bg-slate-800 text-xs border border-slate-800 h-8 flex items-center gap-1.5"
                             >
                               <Edit3 className="h-3.5 w-3.5" /> Adjust Credits
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              onClick={() => {
+                                setAdjustingTenantPlan(t);
+                                setTenantPlanValue(t.plan || "basic");
+                              }}
+                              className="bg-slate-900 hover:bg-slate-800 text-xs border border-slate-800 h-8 flex items-center gap-1.5"
+                            >
+                              <ShieldAlert className="h-3.5 w-3.5 text-indigo-400" /> Adjust Plan
                             </Button>
                             <Button 
                               size="sm" 
@@ -396,6 +448,19 @@ const SuperAdminDashboard = () => {
                 />
               </div>
 
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-gray-400 uppercase">Subscription Plan Tier</label>
+                <select
+                  value={newTenantPlan}
+                  onChange={(e) => setNewTenantPlan(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 text-white rounded-lg h-10 px-3 focus:border-indigo-500 focus:outline-none"
+                >
+                  <option value="basic">Basic (Auto-Send link only)</option>
+                  <option value="pro">Pro (All features: Gmail + OCR + Auto-Send)</option>
+                  <option value="enterprise">Enterprise (All features + Custom limits)</option>
+                </select>
+              </div>
+
               <div className="flex gap-3 justify-end mt-8">
                 <Button 
                   type="button" 
@@ -457,6 +522,53 @@ const SuperAdminDashboard = () => {
                 >
                   {submitting && <Loader2 className="animate-spin h-4 w-4" />}
                   Confirm Allocation
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Adjust Plan Modal */}
+      {adjustingTenantPlan && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex justify-center items-center p-4">
+          <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl relative">
+            <h3 className="text-xl font-bold mb-2 flex items-center gap-2">
+              <ShieldAlert className="h-5 w-5 text-indigo-400 animate-pulse" /> Adjust Subscription Tier
+            </h3>
+            <p className="text-xs text-gray-400 mb-6">
+              Modify the subscription plan for <span className="font-bold text-white">{adjustingTenantPlan.name}</span>. This affects feature gating.
+            </p>
+
+            <form onSubmit={handleUpdatePlan} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-gray-400 uppercase">Subscription Plan Tier</label>
+                <select
+                  value={tenantPlanValue}
+                  onChange={(e) => setTenantPlanValue(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 text-white rounded-lg h-10 px-3 focus:border-indigo-500 focus:outline-none"
+                >
+                  <option value="basic">Basic (Auto-Send link only)</option>
+                  <option value="pro">Pro (All features: Gmail + OCR + Auto-Send)</option>
+                  <option value="enterprise">Enterprise (All features + Custom limits)</option>
+                </select>
+              </div>
+
+              <div className="flex gap-3 justify-end mt-8">
+                <Button 
+                  type="button" 
+                  onClick={() => setAdjustingTenantPlan(null)}
+                  className="bg-slate-950 border border-slate-800 hover:bg-slate-900 text-gray-400 h-10 px-4 rounded-lg"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  type="submit" 
+                  disabled={submitting}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white h-10 px-5 rounded-lg flex items-center gap-2"
+                >
+                  {submitting && <Loader2 className="animate-spin h-4 w-4" />}
+                  Confirm Update
                 </Button>
               </div>
             </form>

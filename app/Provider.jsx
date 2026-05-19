@@ -11,6 +11,7 @@ const Provider = ({children}) => {
     const [activeOrgId, setActiveOrgId] = useState(null)
     const [activeOrgName, setActiveOrgName] = useState("Global View")
     const [activeOrgCredits, setActiveOrgCredits] = useState(null)
+    const [activeOrgPlan, setActiveOrgPlan] = useState("basic")
     const pathname = usePathname()
     const router = useRouter()
 
@@ -46,17 +47,19 @@ const Provider = ({children}) => {
         if (!activeOrgId) {
             setActiveOrgName("Global View")
             setActiveOrgCredits(null)
+            setActiveOrgPlan("basic")
             return
         }
         supabase
             .from("organizations")
-            .select("name, credits_remaining")
+            .select("name, credits_remaining, plan")
             .eq("id", activeOrgId)
             .single()
             .then(({ data }) => {
                 if (data) {
                     setActiveOrgName(data.name)
                     setActiveOrgCredits(data.credits_remaining)
+                    setActiveOrgPlan(data.plan || "basic")
                 }
             })
     }, [activeOrgId])
@@ -179,7 +182,7 @@ const SyncUser = async (supabaseUser) => {
 
 return (
     <div>
-<UserDetailContext.Provider value={{user , setUser, activeOrgId, setActiveOrgId, activeOrgName, activeOrgCredits}} >     
+<UserDetailContext.Provider value={{user , setUser, activeOrgId, setActiveOrgId, activeOrgName, activeOrgCredits, activeOrgPlan, setActiveOrgPlan}} >     
            {children}
 </UserDetailContext.Provider>
 

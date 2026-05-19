@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Check } from "lucide-react";
 import { toast } from "sonner";
 import { useUser } from "@/app/Provider";
+import { useSelector, useDispatch } from "react-redux";
+import { updateForm, saveInterviewAutomation, resetForm } from "@/features/interview/interviewSlice";
 
 // Sub-components
 import FormContainer from "./components/FormContainer";
@@ -14,28 +16,21 @@ import InterviewLink from "./components/InterviewLink";
 
 const CreateInterview = () => {
   const router = useRouter();
+  const dispatch = useDispatch();
   const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState({
-    jobPosition: "",
-    department: "",
-    jobDescription: "",
-    duration: "",
-    type: "",
-    gmailFetch: false,
-    ocrParsing: false,
-    autoSendLink: true,
-  });
+  const formData = useSelector((state) => state.interview.currentForm);
   const [interviewId, setInterviewId] = useState("");
   const { user, activeOrgCredits } = useUser();
+
+  useEffect(() => {
+    dispatch(resetForm());
+  }, [dispatch]);
 
   const isSystemAdmin = user?.role === "super_admin" || user?.email === "saad122sharukh@gmail.com";
   const creditsExhausted = activeOrgCredits !== null && activeOrgCredits <= 0 && !isSystemAdmin;
 
   const handleInputChange = (field, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    dispatch(updateForm({ [field]: value }));
   };
 
   const validateStep1 = () => {
@@ -65,6 +60,14 @@ const CreateInterview = () => {
   };
 
   const handleCreateLink = (id) => {
+    dispatch(saveInterviewAutomation({
+      interviewId: id,
+      settings: {
+        gmailFetch: formData?.gmailFetch ?? false,
+        ocrParsing: formData?.ocrParsing ?? false,
+        autoSendLink: formData?.autoSendLink ?? true,
+      }
+    }));
     setInterviewId(id);
     setStep(4);
   };
