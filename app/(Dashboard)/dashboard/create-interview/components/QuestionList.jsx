@@ -14,7 +14,9 @@ const QuestionList = ({ formData, onCreateLink  }) => {
   const [editIndex, setEditIndex] = useState(null);
   const [editData, setEditData] = useState({ question: "", type: "" });
   const [saveLoading, setSaveLoading] = useState(false);
-  const { user } = useUser();
+  const { user, activeOrgId, activeOrgCredits } = useUser();
+  const isSystemAdmin = user?.role === "super_admin" || user?.email === "saad122sharukh@gmail.com";
+  const creditsExhausted = activeOrgCredits !== null && activeOrgCredits <= 0 && !isSystemAdmin;
 
   useEffect(() => {
     if (formData) {
@@ -62,35 +64,57 @@ const QuestionList = ({ formData, onCreateLink  }) => {
   };
 
   const onFinish = async () => {
+    if (creditsExhausted) {
+      toast.error("Insufficient credits. Please recharge to create new interviews.");
+      return;
+    }
+
     setSaveLoading(true);
     const interview_id = uuidv4();
-    const { data, error } = await supabase
-      .from("Interviews")
-      .insert([
-        {
-          ...formData,
-          questionList: questions,
-          userEmail: user?.email || "user@gmail.com",
-          interview_id: interview_id,
-        },
-      ])
-      .select();
+    
+    try {
+      // 1. Insert Interview linked to active organization
+      const { data, error } = await supabase
+        .from("Interviews")
+        .insert([
+          {
+            ...formData,
+            questionList: questions,
+            userEmail: user?.email || "user@gmail.com",
+            interview_id: interview_id,
+            organization_id: activeOrgId
+          },
+        ])
+        .select();
 
-    // Update User Credits   
-      
-const userUpdate = await supabase
-  .from('Users')
-  .update({ credits: Number(user?.credits) -1  })
-  .eq('email', user?.email)
-  .select();
+      if (error) throw error;
 
-  console.log(userUpdate)
-          
+      // 2. Decrement Organization Credits (only for B2B tenants, admins bypass)
+      if (activeOrgId && !isSystemAdmin) {
+        const { error: creditError } = await supabase
+          .from('organizations')
+          .update({ credits_remaining: Math.max(0, Number(activeOrgCredits) - 1) })
+          .eq('id', activeOrgId);
 
-    setSaveLoading(false);
+        if (creditError) throw creditError;
+      } else if (!isSystemAdmin) {
+        // Fallback: update individual user credits if they have no active tenant
+        const { error: userCreditError } = await supabase
+          .from('Users')
+          .update({ credits: Math.max(0, Number(user?.credits || 0) - 1) })
+          .eq('email', user?.email);
 
-    onCreateLink (interview_id)
-    console.log(data)
+        if (userCreditError) throw userCreditError;
+      }
+
+      toast.success("Interview link created successfully!");
+      onCreateLink(interview_id);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to complete interview creation.");
+    } finally {
+      setSaveLoading(false);
+    }
   };
 
   return (
@@ -180,9 +204,13 @@ const userUpdate = await supabase
       {/* // FINISH BUTTON  */}
 
       <div className="flex justify-end my-5">
-        <Button onClick={() => onFinish()} >
-          {saveLoading && <Loader2Icon className="animate-spin" />}
-          Create Interview Link
+        <Button 
+          onClick={() => onFinish()} 
+          disabled={creditsExhausted || saveLoading}
+          className={`${creditsExhausted ? "bg-red-600/50 hover:bg-red-600/50 cursor-not-allowed text-white" : ""}`}
+        >
+          {saveLoading && <Loader2Icon className="animate-spin mr-2" />}
+          {creditsExhausted ? "Credits Exhausted" : "Create Interview Link"}
         </Button>
       </div>
     </div>

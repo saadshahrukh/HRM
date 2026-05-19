@@ -27,7 +27,7 @@ import { useEffect, useState } from "react";
 
 function AppSidebar() {
   const pathname = usePathname();
-  const { user } = useUser();
+  const { user, activeOrgName } = useUser();
   const [openGroups, setOpenGroups] = useState(() => getInitiallyOpenGroups(pathname));
 
   useEffect(() => {
@@ -67,7 +67,7 @@ function AppSidebar() {
             <div className="mt-1 flex items-center gap-1.5">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
               <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                Hiring OS
+                {activeOrgName || "Hiring OS"}
               </p>
             </div>
           </div>

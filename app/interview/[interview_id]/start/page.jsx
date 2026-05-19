@@ -14,6 +14,7 @@ import CandidatePanel from "./components/CandidatePanel";
 import InterviewControls from "./components/InterviewControls";
 import { useEyeContactDetection } from "./components/EyeContactDetector";
 import { useVideoRecorder } from "./components/VideoRecorder";
+import { ModernSpinner } from "@/components/global_components/ModernSpinner";
 
 const StartInterview = () => {
   const { interviewInfo, setInterviewInfo } = useContext(InterviewDataContext);
@@ -465,15 +466,16 @@ Key Guidelines:
     }
   }, [isAudioEnabled]);
 
+  useEffect(() => {
+    // Fix rendering issue: If user refreshes and context is lost, redirect back to lobby
+    if (!interviewInfo && typeof window !== "undefined") {
+      toast.error("Session lost. Please rejoin the interview.");
+      router.push(`/interview/${interview_id}`);
+    }
+  }, [interviewInfo, interview_id, router]);
+
   if (!interviewInfo) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-gray-900 text-white">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500 mx-auto mb-4" />
-          <p className="text-lg">Loading interview...</p>
-        </div>
-      </div>
-    );
+    return <ModernSpinner fullScreen text="Loading interview session..." />;
   }
 
   return (
