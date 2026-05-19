@@ -1,17 +1,17 @@
 "use client";
 
-import PageShell from "../../components/PageShell";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function NewJobPage() {
+  const router = useRouter();
+  useEffect(() => {
+    router.replace("/dashboard/create-interview");
+  }, [router]);
+
   return (
-    <PageShell
-      title="Post New Job"
-      description="AI-assisted job creation: title, department, location, then auto-generated description with editable skills and salary band."
-      plannedFeatures={[
-        "Step 1: Job Title, Department, Location, Employment Type",
-        "Step 2: AI-generated job description (editable)",
-        "Publish to generate public application link",
-      ]}
-    />
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
+      <p className="text-gray-400">Redirecting to Job creation...</p>
+    </div>
   );
 }

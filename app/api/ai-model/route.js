@@ -25,7 +25,7 @@ const openai = new OpenAI({
 })
 
   const completion = await openai.chat.completions.create({
-    model: "google/gemini-2.0-flash-exp:free",
+    model: "google/gemma-4-26b-a4b-it:free",
     messages: [
       { role: "user", content: FINAL_PROMPT   }
     ],

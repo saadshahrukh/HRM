@@ -3,16 +3,10 @@ import React, { useState, useRef } from "react";
 import { Upload, Plus, Loader2, AlertCircle, Check, X } from "lucide-react";
 import axios from "axios";
 
-/*
-Usage:
-<FileUploader onAccept={(questionsArray) => { setQuestions(prev => [...prev, ...questionsArray]) }} />
-*/
-
 export default function Uploader({ onAccept }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [preview, setPreview] = useState(null);
-  const [ocring, setOcring] = useState(false);
   const inputRef = useRef(null);
 
   const handleFile = async (e) => {
@@ -26,7 +20,6 @@ export default function Uploader({ onAccept }) {
       const form = new FormData();
       form.append("file", file);
 
-      // Use fetch / axios to send FormData
       const res = await axios.post("/api/parse-questions", form, {
         headers: { "Content-Type": "multipart/form-data" },
         timeout: 120000,
@@ -73,23 +66,22 @@ export default function Uploader({ onAccept }) {
     });
   };
 
-  const manualAdd = () => {
-    onAccept([{ question: "Your custom question?", type: "Experience" }]);
-  };
-
   return (
-    <div className="p-5 bg-white rounded-xl shadow-sm space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Upload / Add Questions</h3>
-        <div className="text-sm text-slate-500">
+    <div className="space-y-4 text-white">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div>
+          <h3 className="text-sm font-bold">Upload Interview Questions</h3>
+          <p className="text-xs text-gray-400 mt-0.5">Upload a list of questions directly from external files.</p>
+        </div>
+        <div className="text-xs text-gray-500 font-mono">
           PDF, XLSX, CSV, TXT supported
         </div>
       </div>
 
-      <div className="flex gap-3">
-        <label className="flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg cursor-pointer hover:bg-blue-100">
-          <Upload className="w-4 h-4 text-blue-700" />
-          <span className="text-sm">Upload file</span>
+      <div className="flex flex-wrap gap-3">
+        <label className="flex items-center gap-2 px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl cursor-pointer hover:bg-slate-850 hover:border-slate-700 transition-all text-xs font-bold text-gray-300">
+          <Upload className="w-4 h-4 text-indigo-400" />
+          <span>Upload File</span>
           <input
             ref={inputRef}
             type="file"
@@ -98,70 +90,65 @@ export default function Uploader({ onAccept }) {
             className="hidden"
           />
         </label>
-
-        <button
-          onClick={manualAdd}
-          className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-        >
-          <Plus className="w-4 h-4" /> Add Manual
-        </button>
       </div>
 
       {loading && (
-        <div className="flex items-center gap-2 text-sm text-gray-600">
-          <Loader2 className="animate-spin w-4 h-4" /> Processing file... this
-          can take a few seconds.
+        <div className="flex items-center gap-2 text-xs text-gray-400 bg-slate-950/40 p-3 rounded-xl border border-slate-850">
+          <Loader2 className="animate-spin w-4 h-4 text-indigo-400" />
+          <span>Processing questions file... this might take a few moments.</span>
         </div>
       )}
 
       {error && (
-        <div className="flex items-start gap-2 text-red-700 bg-red-50 p-3 rounded">
-          <AlertCircle className="w-5 h-5" />
-          <div className="text-sm">{error}</div>
+        <div className="flex items-start gap-2.5 text-red-400 bg-red-950/20 border border-red-900/30 p-3.5 rounded-xl">
+          <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+          <div className="text-xs">{error}</div>
         </div>
       )}
 
       {/* Preview */}
       {preview && (
-        <div className="mt-4 border rounded-lg p-3 bg-gray-50">
-          <div className="flex items-center justify-between mb-2">
-            <div className="font-medium text-sm">Preview parsed questions</div>
+        <div className="mt-4 border border-slate-850 rounded-xl p-4 bg-slate-950/40 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="font-bold text-xs">Previewing Parsed Questions</div>
             <div className="flex gap-2">
               <button
+                type="button"
                 onClick={() => setPreview(null)}
-                className="px-3 py-1 bg-gray-200 rounded text-sm flex items-center gap-1"
+                className="px-3 py-1.5 bg-slate-900 border border-slate-800 rounded-lg text-xs font-bold hover:text-white transition-all"
               >
-                <X className="w-4 h-4" /> Cancel
+                Cancel
               </button>
               <button
+                type="button"
                 onClick={acceptAll}
-                className="px-3 py-1 bg-blue-600 text-white rounded text-sm flex items-center gap-1"
+                className="px-3 py-1.5 bg-indigo-600 rounded-lg text-xs font-bold hover:bg-indigo-700 transition-all text-white"
               >
-                <Check className="w-4 h-4" /> Accept All
+                Accept All
               </button>
             </div>
           </div>
 
-          <ul className="space-y-2 max-h-72 overflow-auto">
+          <ul className="space-y-2 max-h-60 overflow-y-auto pr-1">
             {preview.questions.map((q, idx) => (
-              <li key={idx} className="p-2 bg-white border rounded flex gap-3">
-                <div className="flex-1">
-                  <textarea
-                    value={q.question}
-                    onChange={(e) =>
-                      updatePreview(idx, { question: e.target.value })
-                    }
-                    rows={2}
-                    className="w-full p-2 border rounded resize-none"
-                  />
-                  <div className="mt-2 flex items-center gap-2">
-                    <label className="text-xs">Type</label>
+              <li key={idx} className="p-3 bg-slate-900/60 border border-slate-850 rounded-lg space-y-2">
+                <textarea
+                  value={q.question}
+                  onChange={(e) =>
+                    updatePreview(idx, { question: e.target.value })
+                  }
+                  rows={2}
+                  className="w-full bg-slate-950 border border-slate-850 rounded-lg p-2 text-xs text-white focus:border-indigo-500 focus:outline-none resize-none"
+                />
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-gray-500 font-bold uppercase">Type</span>
                     <select
                       value={q.type}
                       onChange={(e) =>
                         updatePreview(idx, { type: e.target.value })
                       }
-                      className="text-sm border px-2 py-1 rounded"
+                      className="text-xs bg-slate-950 border border-slate-850 rounded-lg px-2 py-1 text-white focus:outline-none focus:border-indigo-500"
                     >
                       <option>Technical</option>
                       <option>Behavioral</option>
@@ -170,11 +157,10 @@ export default function Uploader({ onAccept }) {
                       <option>Leadership</option>
                     </select>
                   </div>
-                </div>
-                <div className="flex flex-col gap-2">
                   <button
+                    type="button"
                     onClick={() => removePreview(idx)}
-                    className="text-sm text-red-600"
+                    className="text-xs text-red-400 hover:text-red-300 font-bold"
                   >
                     Remove
                   </button>

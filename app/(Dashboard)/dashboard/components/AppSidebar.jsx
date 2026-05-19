@@ -73,7 +73,7 @@ function AppSidebar() {
           </div>
         </div>
 
-        <Link href="/jobs/new" className="group block w-full">
+        <Link href="/dashboard/create-interview" className="group block w-full">
           <Button className="h-11 w-full rounded-xl bg-primary font-medium text-primary-foreground shadow-[0_0_15px_rgba(79,70,229,0.2)] transition-all duration-300 hover:bg-primary/90 group-hover:shadow-[0_0_20px_rgba(79,70,229,0.35)]">
             <Plus className="mr-2 h-4 w-4 transition-transform group-hover:rotate-90" />
             Post New Job

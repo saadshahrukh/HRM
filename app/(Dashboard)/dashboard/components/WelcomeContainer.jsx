@@ -43,7 +43,7 @@ const WelcomeContainer = () => {
           <p className="mb-4 text-indigo-100 text-lg">
             Jobs, candidates, AI interviews, and reports in one place.
           </p>
-          <Link href="/jobs/new">
+          <Link href="/dashboard/create-interview">
             <Button className="bg-white font-semibold text-indigo-700 hover:bg-indigo-50">
               + Post New Job
             </Button>

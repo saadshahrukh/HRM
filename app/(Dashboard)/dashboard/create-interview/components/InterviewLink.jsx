@@ -1,95 +1,83 @@
-import styles from "@/app/styles";
+"use client";
+
+import React, { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Calendar, Clock, Copy, List, Mail, Plus } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
-import React, { useEffect } from "react";
-import { FaWhatsapp, FaSlack } from "react-icons/fa";
+import { ArrowRight, Copy, Check, ExternalLink, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const InterviewLink = ({ interview_id, formData }) => {
-      const url = process.env.NEXT_PUBLIC_HOST_URL + "/" + interview_id;
+  const router = useRouter();
+  const url = typeof window !== "undefined" 
+    ? `${window.location.origin}/interview/${interview_id}`
+    : `https://aihrm.com/interview/${interview_id}`;
 
-  const getInterviewUrl = () => {
-    return url;
-
-     
+  const onCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success("Public job link copied to clipboard!");
+    } catch (err) {
+      toast.error("Failed to copy link.");
+    }
   };
 
-   const onCopy = async() => {
-    await navigator.clipboard.writeText(url) ;
-    toast('Link Copied')  ;
-  }
-  useEffect(() => {
-    if (interview_id) {
-      getInterviewUrl();
-    }
-  }, [interview_id]);
-
-
-
-
-
   return (
-    <div className="p-5 w-full justify-center items-center flex flex-col">
-      <Image src={"/logo.webp"} alt="Check icon" width={200} height={200} />
-      <h2 className={`${styles.heading2}mt-3 `}>Your Ai-Interview is Ready</h2>
-      <p className="mt-3">Share This link with Your Candidate</p>
-
-      <div className="w-full p-7 mt-6 rounded-xl bg-white ">
-        <div className="flex justify-between items-center">
-          <h2 className="font-bold">Interview Link : </h2>
-          <h2 className="p-2 px-5 text-blue-500 bg-blue-100 rounded-3xl ">
-            Valid For 30 Days
-          </h2>
+    <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800 p-8 md:p-12 rounded-2xl shadow-xl space-y-8 animate-fade-in text-white text-center max-w-2xl mx-auto">
+      {/* Animated Success Ring */}
+      <div className="flex justify-center">
+        <div className="relative">
+          {/* Soft outer glow */}
+          <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-xl animate-pulse" />
+          <div className="relative h-16 w-16 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-full flex items-center justify-center shadow-inner">
+            <Check className="h-8 w-8" />
+          </div>
         </div>
-        <div className="mt-3 flex gap-3">
-          <Input disabled defaultValue={getInterviewUrl()} />
-          <Button  onClick={()=>onCopy()}>
-            
-            <Copy /> Copy Link
+      </div>
+
+      {/* Main Copy */}
+      <div className="space-y-2">
+        <h2 className="text-2xl font-black tracking-tight">Job is Ready!</h2>
+        <p className="text-sm text-gray-400 max-w-md mx-auto">
+          The AI automation rules are set. Your job pipeline is active and ready to process candidates.
+        </p>
+      </div>
+
+      {/* Copy Link Container */}
+      <div className="p-6 bg-slate-950/60 border border-slate-850 rounded-xl space-y-2 text-left">
+        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Public Job Link</label>
+        <div className="flex gap-2">
+          <Input 
+            readOnly 
+            value={url} 
+            className="bg-slate-900 border-slate-800 text-white rounded-lg h-11 select-all font-mono text-xs cursor-text"
+          />
+          <Button 
+            onClick={onCopy}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white h-11 px-4 rounded-lg flex items-center justify-center gap-2"
+          >
+            <Copy className="h-4 w-4" />
           </Button>
         </div>
-        <hr className="my-8" />
-
-        <div className="flex  justify-evenly">
-          <h2 className="text-sm text-gray-500 flex gap-2 items-start ">
-            <Clock className="h-4 w-4" /> {formData?.duration || "5"} Mins{" "}
-          </h2>
-          <h2 className="text-sm text-gray-500 flex gap-2 items-start ">
-            <List className="h-4 w-4" /> {formData?.duration || "10"} Questions{" "}
-          </h2>
-
-          <h2 className="text-sm text-gray-500 flex gap-2 items-start ">
-            <Calendar className="h-4 w-4" /> {formData?.duration || "N/A"}{" "}
-          </h2>
-        </div>
-      </div>
-  
-      <div className="w-full p-7 mt-6 rounded-xl bg-white">
-         <h1 className={`${styles.heading2} my-5 `} >Share Via</h1> 
-        <div className="w-full  flex justify-around  gap-5 max-w-full  overflow-hidden" >
-      
-        <Button variant={"outline"} className='w-[30%]'>
-          <Mail /> Email
-        </Button>
-        <Button variant={"outline"} className='w-[30%]' >
-          <FaSlack /> Slack
-        </Button>
-
-        <Button variant={"outline"} className='w-[30%]' >
-          <FaWhatsapp /> Whatsapp
-        </Button>
-        </div>
       </div>
 
+      {/* Bottom Actions */}
+      <div className="space-y-4 pt-4 border-t border-slate-850">
+        <Button 
+          onClick={() => router.push("/dashboard")}
+          className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold h-12 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/15 group"
+        >
+          <span>Go to Job Pipeline</span>
+          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+        </Button>
 
-    <div className="flex w-full gap-5 justify-between mt-10" >
-    <Link href={"/dashboard"} >  <Button variant={'outline'}   > <ArrowLeft  /> Back to Dashboard  </Button> </Link>
-    <Link  href={"/create-interview"} >  <Button  > <Plus /> Create New Interview </Button> </Link>
-    </div>
-
+        <button 
+          onClick={() => window.location.reload()}
+          className="text-xs text-gray-500 hover:text-white transition-colors flex items-center justify-center gap-1.5 mx-auto"
+        >
+          <RefreshCw className="h-3 w-3" /> Create another interview job
+        </button>
+      </div>
     </div>
   );
 };
