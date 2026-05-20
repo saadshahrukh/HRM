@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, Check } from "lucide-react";
 import { toast } from "sonner";
 import { useUser } from "@/app/Provider";
 import { useSelector, useDispatch } from "react-redux";
 import { updateForm, saveInterviewAutomation, resetForm } from "@/features/interview/interviewSlice";
+import { supabase } from "@/services/supaBaseClient";
 
 // Sub-components
 import FormContainer from "./components/FormContainer";
@@ -16,15 +17,59 @@ import InterviewLink from "./components/InterviewLink";
 
 const CreateInterview = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const editId = searchParams ? searchParams.get("edit") : null;
   const dispatch = useDispatch();
   const [step, setStep] = useState(1);
   const formData = useSelector((state) => state.interview.currentForm);
+  const interviewsAutomation = useSelector((state) => state.interview.interviewsAutomation);
   const [interviewId, setInterviewId] = useState("");
   const { user, activeOrgCredits } = useUser();
 
   useEffect(() => {
-    dispatch(resetForm());
-  }, [dispatch]);
+    if (editId) {
+      const fetchInterviewData = async () => {
+        try {
+          const { data, error } = await supabase
+            .from("Interviews")
+            .select("*")
+            .eq("interview_id", editId)
+            .single();
+          if (data && !error) {
+            const savedSetting = interviewsAutomation[editId] || {
+              gmailFetch: false,
+              ocrParsing: false,
+              autoSendLink: true,
+            };
+            dispatch(
+              updateForm({
+                jobPosition: data.jobPosition || "",
+                department: data.department || "",
+                location: data.location || "Remote",
+                jobDescription: data.jobDescription || "",
+                duration: data.duration || "",
+                type: data.type || "",
+                gmailFetch: savedSetting.gmailFetch,
+                ocrParsing: savedSetting.ocrParsing,
+                autoSendLink: savedSetting.autoSendLink,
+                questions: data.questionList || [],
+                isEditing: true,
+                editInterviewId: editId,
+              })
+            );
+          } else {
+            toast.error("Failed to load job details.");
+          }
+        } catch (err) {
+          console.error(err);
+          toast.error("Failed to load job details.");
+        }
+      };
+      fetchInterviewData();
+    } else {
+      dispatch(resetForm());
+    }
+  }, [editId, dispatch]);
 
   const isSystemAdmin = user?.role === "super_admin" || user?.email === "saad122sharukh@gmail.com";
   const creditsExhausted = activeOrgCredits !== null && activeOrgCredits <= 0 && !isSystemAdmin;

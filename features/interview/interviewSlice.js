@@ -6,12 +6,16 @@ const initialState = {
   currentForm: {
     jobPosition: "",
     department: "",
+    location: "Remote",
     jobDescription: "",
     duration: "",
     type: "",
     gmailFetch: false,
     ocrParsing: false,
     autoSendLink: true,
+    questions: [],
+    isEditing: false,
+    editInterviewId: null,
   },
   interviewsAutomation: {},
 };

@@ -61,7 +61,7 @@ const FormContainer = ({ formData, handleInputChange, goToNext }) => {
       </div>
 
       {/* Main Fields Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Job Title */}
         <div className="space-y-2">
           <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Job Title</label>
@@ -82,6 +82,25 @@ const FormContainer = ({ formData, handleInputChange, goToNext }) => {
             onChange={(e) => handleInputChange("department", e.target.value)}
             className="bg-slate-950 border-slate-800 text-white rounded-xl focus:border-indigo-500 placeholder:text-gray-600 h-11"
           />
+        </div>
+
+        {/* Location Mode */}
+        <div className="space-y-2">
+          <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Location Mode</label>
+          <Select
+            value={formData?.location || "Remote"}
+            onValueChange={(val) => handleInputChange("location", val)}
+          >
+            <SelectTrigger className="w-full bg-slate-950 border-slate-800 text-white rounded-xl h-11 focus:border-indigo-500 text-left">
+              <SelectValue placeholder="Select Location" />
+            </SelectTrigger>
+            <SelectContent className="bg-slate-900 border-slate-850 text-white rounded-xl">
+              <SelectItem value="Remote" className="focus:bg-indigo-600 focus:text-white">Remote</SelectItem>
+              <SelectItem value="Hybrid" className="focus:bg-indigo-600 focus:text-white">Hybrid</SelectItem>
+              <SelectItem value="Hybrid - NY" className="focus:bg-indigo-600 focus:text-white">Hybrid - NY</SelectItem>
+              <SelectItem value="On-site" className="focus:bg-indigo-600 focus:text-white">On-site</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 

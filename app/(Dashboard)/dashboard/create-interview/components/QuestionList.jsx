@@ -22,8 +22,12 @@ const QuestionList = ({ formData, onCreateLink, goBack }) => {
   const creditsExhausted = activeOrgCredits !== null && activeOrgCredits <= 0 && !isSystemAdmin;
 
   useEffect(() => {
-    if (formData && questions.length === 0) {
-      fetchQuestions();
+    if (formData) {
+      if (formData.questions && formData.questions.length > 0) {
+        setQuestions(formData.questions);
+      } else if (questions.length === 0) {
+        fetchQuestions();
+      }
     }
   }, [formData]);
 
@@ -91,51 +95,73 @@ const QuestionList = ({ formData, onCreateLink, goBack }) => {
     }
 
     setSaveLoading(true);
-    const interview_id = uuidv4();
+    const isEditing = formData?.isEditing;
+    const interview_id = isEditing ? formData.editInterviewId : uuidv4();
     
     try {
-      // 1. Insert Interview linked to active organization
-      const { data, error } = await supabase
-        .from("Interviews")
-        .insert([
-          {
+      if (isEditing) {
+        // Update existing interview record
+        const { error } = await supabase
+          .from("Interviews")
+          .update({
             jobPosition: formData?.jobPosition || "",
             jobDescription: formData?.jobDescription || "",
             duration: formData?.duration || "",
             type: formData?.type || "",
             questionList: questions,
-            userEmail: user?.email || "user@gmail.com",
-            interview_id: interview_id,
-            organization_id: activeOrgId
-          },
-        ])
-        .select();
+            department: formData?.department || "",
+            location: formData?.location || "Remote"
+          })
+          .eq("interview_id", interview_id);
 
-      if (error) throw error;
+        if (error) throw error;
+        toast.success("Job updated successfully!");
+      } else {
+        // 1. Insert Interview linked to active organization
+        const { error } = await supabase
+          .from("Interviews")
+          .insert([
+            {
+              jobPosition: formData?.jobPosition || "",
+              jobDescription: formData?.jobDescription || "",
+              duration: formData?.duration || "",
+              type: formData?.type || "",
+              questionList: questions,
+              userEmail: user?.email || "user@gmail.com",
+              interview_id: interview_id,
+              organization_id: activeOrgId,
+              department: formData?.department || "",
+              location: formData?.location || "Remote"
+            },
+          ]);
 
-      // 2. Decrement Organization Credits (only for B2B tenants, admins bypass)
-      if (activeOrgId && !isSystemAdmin) {
-        const { error: creditError } = await supabase
-          .from('organizations')
-          .update({ credits_remaining: Math.max(0, Number(activeOrgCredits) - 1) })
-          .eq('id', activeOrgId);
+        if (error) throw error;
 
-        if (creditError) throw creditError;
-      } else if (!isSystemAdmin) {
-        // Fallback: update individual user credits if they have no active tenant
-        const { error: userCreditError } = await supabase
-          .from('Users')
-          .update({ credits: Math.max(0, Number(user?.credits || 0) - 1) })
-          .eq('email', user?.email);
+        // 2. Decrement Organization Credits (only for B2B tenants, admins bypass)
+        if (activeOrgId && !isSystemAdmin) {
+          const { error: creditError } = await supabase
+            .from('organizations')
+            .update({ credits_remaining: Math.max(0, Number(activeOrgCredits) - 1) })
+            .eq('id', activeOrgId);
 
-        if (userCreditError) throw userCreditError;
+          if (creditError) throw creditError;
+        } else if (!isSystemAdmin) {
+          // Fallback: update individual user credits if they have no active tenant
+          const { error: userCreditError } = await supabase
+            .from('Users')
+            .update({ credits: Math.max(0, Number(user?.credits || 0) - 1) })
+            .eq('email', user?.email);
+
+          if (userCreditError) throw userCreditError;
+        }
+
+        toast.success("Interview link created successfully!");
       }
 
-      toast.success("Interview link created successfully!");
       onCreateLink(interview_id);
     } catch (err) {
       console.error(err);
-      toast.error("Failed to complete interview creation.");
+      toast.error(isEditing ? "Failed to update job." : "Failed to complete interview creation.");
     } finally {
       setSaveLoading(false);
     }

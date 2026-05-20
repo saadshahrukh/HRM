@@ -64,7 +64,7 @@ const InterviewLink = ({ interview_id, formData }) => {
       {/* Bottom Actions */}
       <div className="space-y-4 pt-4 border-t border-slate-850">
         <Button 
-          onClick={() => router.push("/dashboard")}
+          onClick={() => router.push("/reports/pipeline")}
           className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold h-12 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/15 group"
         >
           <span>Go to Job Pipeline</span>
