@@ -61,7 +61,7 @@ export default function HiringPipelineReportPage() {
         .order("created_at", { ascending: false });
 
       if (activeOrgId) {
-        query = query.eq("organization_id", activeOrgId);
+        query = query.or(`organization_id.eq.${activeOrgId},userEmail.eq.${user?.email}`);
       } else {
         query = query.eq("userEmail", user?.email);
       }

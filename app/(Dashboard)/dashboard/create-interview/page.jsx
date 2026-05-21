@@ -55,6 +55,9 @@ const CreateInterview = () => {
                 questions: data.questionList || [],
                 isEditing: true,
                 editInterviewId: editId,
+                budget_min: data.budget_min || "",
+                budget_max: data.budget_max || "",
+                currency: data.currency || "USD",
               })
             );
           } else {

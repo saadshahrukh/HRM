@@ -76,12 +76,23 @@ const FormContainer = ({ formData, handleInputChange, goToNext }) => {
         {/* Department */}
         <div className="space-y-2">
           <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Department</label>
-          <Input
-            placeholder="e.g. Design, Engineering"
+          <Select
             value={formData?.department || ""}
-            onChange={(e) => handleInputChange("department", e.target.value)}
-            className="bg-slate-950 border-slate-800 text-white rounded-xl focus:border-indigo-500 placeholder:text-gray-600 h-11"
-          />
+            onValueChange={(val) => handleInputChange("department", val)}
+          >
+            <SelectTrigger className="w-full bg-slate-950 border-slate-800 text-white rounded-xl h-11 focus:border-indigo-500 text-left">
+              <SelectValue placeholder="Select Department" />
+            </SelectTrigger>
+            <SelectContent className="bg-slate-900 border-slate-850 text-white rounded-xl">
+              <SelectItem value="Engineering" className="focus:bg-indigo-600 focus:text-white">Engineering</SelectItem>
+              <SelectItem value="Design (UI/UX)" className="focus:bg-indigo-600 focus:text-white">Design (UI/UX)</SelectItem>
+              <SelectItem value="Product Management" className="focus:bg-indigo-600 focus:text-white">Product Management</SelectItem>
+              <SelectItem value="Marketing & Sales" className="focus:bg-indigo-600 focus:text-white">Marketing & Sales</SelectItem>
+              <SelectItem value="Human Resources" className="focus:bg-indigo-600 focus:text-white">Human Resources</SelectItem>
+              <SelectItem value="Finance & Legal" className="focus:bg-indigo-600 focus:text-white">Finance & Legal</SelectItem>
+              <SelectItem value="Operations & Support" className="focus:bg-indigo-600 focus:text-white">Operations & Support</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Location Mode */}
@@ -101,6 +112,54 @@ const FormContainer = ({ formData, handleInputChange, goToNext }) => {
               <SelectItem value="On-site" className="focus:bg-indigo-600 focus:text-white">On-site</SelectItem>
             </SelectContent>
           </Select>
+        </div>
+      </div>
+
+      {/* Budget & Currency Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Currency Selector */}
+        <div className="space-y-2">
+          <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Currency</label>
+          <Select
+            value={formData?.currency || "USD"}
+            onValueChange={(val) => handleInputChange("currency", val)}
+          >
+            <SelectTrigger className="w-full bg-slate-950 border-slate-800 text-white rounded-xl h-11 focus:border-indigo-500 text-left">
+              <SelectValue placeholder="Select Currency" />
+            </SelectTrigger>
+            <SelectContent className="bg-slate-900 border-slate-850 text-white rounded-xl">
+              <SelectItem value="PKR" className="focus:bg-indigo-600 focus:text-white">🇵🇰 PKR (Pakistani Rupee)</SelectItem>
+              <SelectItem value="USD" className="focus:bg-indigo-600 focus:text-white">🇺🇸 USD (US Dollar)</SelectItem>
+              <SelectItem value="EUR" className="focus:bg-indigo-600 focus:text-white">🇪🇺 EUR (Euro)</SelectItem>
+              <SelectItem value="GBP" className="focus:bg-indigo-600 focus:text-white">🇬🇧 GBP (British Pound)</SelectItem>
+              <SelectItem value="CAD" className="focus:bg-indigo-600 focus:text-white">🇨🇦 CAD (Canadian Dollar)</SelectItem>
+              <SelectItem value="AUD" className="focus:bg-indigo-600 focus:text-white">🇦🇺 AUD (Australian Dollar)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Budget Min */}
+        <div className="space-y-2">
+          <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Budget Min</label>
+          <Input
+            type="number"
+            placeholder="e.g. 50000"
+            value={formData?.budget_min || ""}
+            onChange={(e) => handleInputChange("budget_min", e.target.value)}
+            className="bg-slate-950 border-slate-800 text-white rounded-xl focus:border-indigo-500 placeholder:text-gray-600 h-11"
+          />
+        </div>
+
+        {/* Budget Max */}
+        <div className="space-y-2">
+          <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Budget Max</label>
+          <Input
+            type="number"
+            placeholder="e.g. 100000"
+            value={formData?.budget_max || ""}
+            onChange={(e) => handleInputChange("budget_max", e.target.value)}
+            className="bg-slate-950 border-slate-800 text-white rounded-xl focus:border-indigo-500 placeholder:text-gray-600 h-11"
+          />
         </div>
       </div>
 

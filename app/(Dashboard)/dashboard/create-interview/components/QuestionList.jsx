@@ -110,7 +110,10 @@ const QuestionList = ({ formData, onCreateLink, goBack }) => {
             type: formData?.type || "",
             questionList: questions,
             department: formData?.department || "",
-            location: formData?.location || "Remote"
+            location: formData?.location || "Remote",
+            budget_min: formData?.budget_min ? parseFloat(formData.budget_min) : null,
+            budget_max: formData?.budget_max ? parseFloat(formData.budget_max) : null,
+            currency: formData?.currency || "USD"
           })
           .eq("interview_id", interview_id);
 
@@ -131,7 +134,10 @@ const QuestionList = ({ formData, onCreateLink, goBack }) => {
               interview_id: interview_id,
               organization_id: activeOrgId,
               department: formData?.department || "",
-              location: formData?.location || "Remote"
+              location: formData?.location || "Remote",
+              budget_min: formData?.budget_min ? parseFloat(formData.budget_min) : null,
+              budget_max: formData?.budget_max ? parseFloat(formData.budget_max) : null,
+              currency: formData?.currency || "USD"
             },
           ]);
 

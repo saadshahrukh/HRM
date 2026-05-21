@@ -16,6 +16,9 @@ const initialState = {
     questions: [],
     isEditing: false,
     editInterviewId: null,
+    budget_min: "",
+    budget_max: "",
+    currency: "USD",
   },
   interviewsAutomation: {},
 };

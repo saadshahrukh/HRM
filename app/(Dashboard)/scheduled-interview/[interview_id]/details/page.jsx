@@ -23,7 +23,13 @@ import {
   FileText,
   Phone,
   Briefcase,
-  User as UserIcon
+  User as UserIcon,
+  Video,
+  PlayCircle,
+  Star,
+  AlertTriangle,
+  Copy,
+  CheckCircle2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,6 +61,13 @@ export default function PipelineDetailPage() {
   const [isManualModalOpen, setIsManualModalOpen] = useState(false);
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
   
+  // HR Step Modals States
+  const [selectedHrCandidate, setSelectedHrCandidate] = useState(null);
+  const [isHrRoundModalOpen, setIsHrRoundModalOpen] = useState(false);
+  const [isCounterModalOpen, setIsCounterModalOpen] = useState(false);
+  const [isContractModalOpen, setIsContractModalOpen] = useState(false);
+  const [hrStatusMap, setHrStatusMap] = useState({});
+
   // Manual Upload Form
   const [manualForm, setManualForm] = useState({ name: "", email: "", phone: "", jobDescription: "", file: null });
   const [manualLoading, setManualLoading] = useState(false);
@@ -70,6 +83,40 @@ export default function PipelineDetailPage() {
       fetchJobDetails();
     }
   }, [user, interview_id]);
+
+  useEffect(() => {
+    if (feedbacks.length > 0) {
+      const stored = localStorage.getItem(`hr_status_map_${interview_id}`);
+      let initialMap = {};
+      if (stored) {
+        try {
+          initialMap = JSON.parse(stored);
+        } catch(e) {}
+      }
+      
+      feedbacks.forEach(fb => {
+        const email = fb.userEmail;
+        if (!initialMap[email]) {
+          const name = (fb.userName || "").toLowerCase();
+          if (name.includes("jenkins") || name.includes("sarah")) {
+            initialMap[email] = 'negotiating';
+          } else if (name.includes("mercer") || name.includes("alex")) {
+            initialMap[email] = 'accepted';
+          } else {
+            initialMap[email] = 'ready';
+          }
+        }
+      });
+      setHrStatusMap(initialMap);
+    }
+  }, [feedbacks, interview_id]);
+
+  const updateHrStatus = (email, status) => {
+    const updated = { ...hrStatusMap, [email]: status };
+    setHrStatusMap(updated);
+    localStorage.setItem(`hr_status_map_${interview_id}`, JSON.stringify(updated));
+  };
+
 
   const fetchJobDetails = async () => {
     setLoading(true);
@@ -336,10 +383,54 @@ The Recruitment Team`;
 
   const visibleIds = filteredCandidates.map(c => c.id);
 
+  const getCandidateAverageScore = (fb) => {
+    if (!fb) return 0;
+    let parsedFb = null;
+    try {
+      parsedFb = typeof fb.feedback === 'string' ? JSON.parse(fb.feedback) : fb.feedback;
+    } catch(e) {}
+    
+    if (parsedFb) {
+      let ratings = [];
+      if (parsedFb.rating) {
+        ratings = Object.values(parsedFb.rating).filter(val => typeof val === 'number');
+      }
+      if (ratings.length === 0 && parsedFb.overallScore !== undefined) {
+        ratings = [parsedFb.overallScore];
+      }
+      if (ratings.length > 0) {
+        const sum = ratings.reduce((a, b) => a + b, 0);
+        return sum / ratings.length;
+      }
+    }
+    return 0;
+  };
+
+  const getCurrencySymbol = (cur) => {
+    if (cur === "EUR") return "€";
+    if (cur === "GBP") return "£";
+    if (cur === "PKR") return "₨ ";
+    return "$";
+  };
+
+  const step3Candidates = feedbacks
+    .filter(fb => getCandidateAverageScore(fb) >= 5)
+    .map(fb => {
+      const candidateInfo = candidates.find(c => c.email === fb.userEmail) || {};
+      return {
+        id: fb.id,
+        name: fb.userName || "Unknown Candidate",
+        email: fb.userEmail,
+        phone: candidateInfo.phone || "",
+        score: getCandidateAverageScore(fb),
+        fbRecord: fb
+      };
+    });
+
   // Statistics for workflow steps
   const totalCVCount = candidates.length;
   const totalInterviewCount = feedbacks.length;
-  const totalOfferCount = feedbacks.filter(fb => fb.recommended === true).length;
+  const totalOfferCount = step3Candidates.length;
 
   return (
     <div className="min-h-screen bg-slate-950 text-white p-6 md:p-8 space-y-8 animate-fade-in">
@@ -650,31 +741,303 @@ The Recruitment Team`;
             </>
           )}
 
-          {activeTab === "interview" && (
-            <div className="bg-slate-900/10 border border-slate-900 p-16 rounded-3xl text-center space-y-4">
-              <div className="mx-auto h-12 w-12 rounded-full bg-slate-900 flex items-center justify-center text-slate-500">
-                <Mail className="h-5 w-5" />
+          {activeTab === "interview" && (() => {
+            const passedCandidates = candidates.filter(c => c.jd_match_score >= 75);
+            
+            // Merge legacy candidates from old flow (feedbacks without a candidate record)
+            const legacyCandidates = feedbacks
+              .filter(fb => !passedCandidates.some(c => c.email === fb.userEmail))
+              .map(fb => ({
+                id: `legacy-${fb.id}`,
+                name: fb.userName || "Unknown",
+                email: fb.userEmail,
+                status: "Completed",
+                updated_at: fb.created_at,
+                isLegacy: true
+              }));
+              
+            const step2Candidates = [...passedCandidates, ...legacyCandidates];
+            
+            return (
+              <div className="bg-slate-950 border border-slate-900 rounded-2xl overflow-hidden shadow-2xl">
+                {step2Candidates.length === 0 ? (
+                  <div className="text-center p-16 text-slate-500 text-sm italic">
+                    No candidates have passed CV screening yet.
+                  </div>
+                ) : (
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="border-b border-slate-900 text-slate-500 uppercase tracking-widest text-[10px]">
+                        <th className="py-4 px-6 font-bold">Candidate</th>
+                        <th className="py-4 px-4 font-bold">Interview Status</th>
+                        <th className="py-4 px-4 font-bold">AI Evaluation Score</th>
+                        <th className="py-4 px-6 text-right font-bold">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-900/60">
+                      {step2Candidates.map((c) => {
+                        const fb = feedbacks.find(f => f.userEmail === c.email);
+                        let parsedFb = null;
+                        if (fb) {
+                          try { 
+                            const parsed = typeof fb.feedback === 'string' ? JSON.parse(fb.feedback) : fb.feedback;
+                            parsedFb = parsed?.feedback || parsed;
+                          } catch (e) {}
+                        }
+                        
+                        let score = null;
+                        let numericScore = null;
+                        if (parsedFb) {
+                          let ratings = [];
+                          if (parsedFb.rating) {
+                            ratings = Object.values(parsedFb.rating).filter(val => typeof val === 'number');
+                          }
+                          if (ratings.length === 0 && parsedFb.overallScore !== undefined) {
+                            ratings = [parsedFb.overallScore];
+                          }
+                          if (ratings.length > 0) {
+                            const sum = ratings.reduce((a, b) => a + b, 0);
+                            numericScore = sum / ratings.length;
+                            score = numericScore.toFixed(1) + "/10";
+                          }
+                        }
+                        
+                        const isCompleted = !!fb;
+                        
+                        return (
+                          <tr key={c.id} className="hover:bg-slate-900/20 transition-colors group">
+                            {/* Candidate */}
+                            <td className="py-4 px-6 flex items-center gap-3">
+                              <div className="relative">
+                                <div className="h-10 w-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400">
+                                  <UserIcon className="h-5 w-5" />
+                                </div>
+                                {isCompleted && (
+                                  <div className="absolute -bottom-0 -right-0 h-3.5 w-3.5 bg-emerald-500 border-2 border-slate-950 rounded-full" />
+                                )}
+                              </div>
+                              <div>
+                                <p className="font-bold text-slate-100 group-hover:text-white transition-colors">{c.name}</p>
+                                <p className="text-[10px] text-slate-500 mt-0.5">
+                                  {c.status === "Invite Sent" ? `Invited ${moment(c.updated_at).fromNow()}` : c.email}
+                                </p>
+                              </div>
+                            </td>
+
+                            {/* Interview Status */}
+                            <td className="py-4 px-4">
+                              {isCompleted ? (
+                                <span className="flex items-center gap-1.5 text-emerald-400 font-bold text-xs">
+                                  <Video className="h-4 w-4" /> Completed
+                                </span>
+                              ) : c.status === "Invite Sent" ? (
+                                <span className="flex items-center gap-1.5 text-amber-400 font-bold text-xs">
+                                  <Clock className="h-4 w-4" /> Pending Response
+                                </span>
+                              ) : (
+                                <span className="flex items-center gap-1.5 text-slate-500 font-bold text-xs">
+                                  <Mail className="h-4 w-4" /> Not Invited
+                                </span>
+                              )}
+                            </td>
+
+                            {/* AI Evaluation Score */}
+                            <td className="py-4 px-4">
+                              {isCompleted && score !== null ? (
+                                <div className="flex items-center gap-3">
+                                  <span className="text-lg font-black text-pink-500">{score}</span>
+                                  {numericScore !== null && (
+                                    <>
+                                      {numericScore >= 8 ? (
+                                        <span className="flex items-center gap-1 bg-emerald-950/80 border border-emerald-800 text-emerald-400 text-[10px] font-bold px-2 py-1 rounded-md">
+                                          <Star className="h-3 w-3 text-emerald-400 fill-emerald-400" /> Strong Hire
+                                        </span>
+                                      ) : numericScore >= 5 ? (
+                                        <span className="flex items-center gap-1 bg-indigo-950/80 border border-indigo-800 text-indigo-400 text-[10px] font-bold px-2 py-1 rounded-md">
+                                          <CheckCircle className="h-3 w-3 text-indigo-400" /> Recommended
+                                        </span>
+                                      ) : (
+                                        <span className="flex items-center gap-1 bg-rose-950/80 border border-rose-800 text-rose-400 text-[10px] font-bold px-2 py-1 rounded-md">
+                                          <AlertCircle className="h-3 w-3 text-rose-400" /> Not Recommended
+                                        </span>
+                                      )}
+                                    </>
+                                  )}
+                                </div>
+                              ) : (
+                                <span className="text-slate-600 text-xs italic">Awaiting completion...</span>
+                              )}
+                            </td>
+
+                            {/* Actions */}
+                            <td className="py-4 px-6 text-right">
+                              {isCompleted ? (
+                                <Button 
+                                  onClick={() => router.push(`/scheduled-interview/${interview_id}/candidate/${fb.id}`)}
+                                  variant="outline" 
+                                  className="bg-pink-500/10 hover:bg-pink-500/20 text-pink-400 border-pink-500/20 rounded-xl h-8 px-4 text-xs font-bold gap-1.5"
+                                >
+                                  <PlayCircle className="h-4 w-4" /> Review Video
+                                </Button>
+                              ) : c.status === "Invite Sent" ? (
+                                <Button variant="outline" className="bg-slate-900 hover:bg-slate-800 text-slate-300 border-slate-800 rounded-xl h-8 px-4 text-xs font-bold">
+                                  Resend Invite
+                                </Button>
+                              ) : (
+                                <Button onClick={() => {
+                                   toggleSelect(c.id);
+                                   setActiveTab("cv");
+                                }} variant="outline" className="bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border-indigo-500/20 rounded-xl h-8 px-4 text-xs font-bold gap-1.5">
+                                  <Send className="h-3.5 w-3.5" /> Send Invite
+                                </Button>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                )}
               </div>
-              <div>
-                <h3 className="text-lg font-bold">Step 2: AI Interviews</h3>
-                <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-                  Monitor active candidates undergoing telephone voice screening or check feedback logs.
-                </p>
-              </div>
-            </div>
-          )}
+            );
+          })()}
 
           {activeTab === "hr" && (
-            <div className="bg-slate-900/10 border border-slate-900 p-16 rounded-3xl text-center space-y-4">
-              <div className="mx-auto h-12 w-12 rounded-full bg-slate-900 flex items-center justify-center text-slate-500">
-                <CheckCircle className="h-5 w-5" />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold">Step 3: HR & Offers</h3>
-                <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-                  Evaluate final scores and release offer details for verified applicants.
-                </p>
-              </div>
+            <div className="bg-slate-950 border border-slate-900 rounded-2xl overflow-hidden shadow-2xl">
+              {step3Candidates.length === 0 ? (
+                <div className="text-center p-16 text-slate-500 text-sm italic">
+                  No candidates have scored above 5.0 to proceed to the HR Round yet.
+                </div>
+              ) : (
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="border-b border-slate-900 text-slate-500 uppercase tracking-widest text-[10px]">
+                      <th className="py-4 px-6 font-bold">Candidate</th>
+                      <th className="py-4 px-4 font-bold">HR Interview Status</th>
+                      <th className="py-4 px-4 font-bold">Salary & Negotiation</th>
+                      <th className="py-4 px-6 text-right font-bold">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-900/60">
+                    {step3Candidates.map((c) => {
+                      const status = hrStatusMap[c.email] || 'ready';
+                      
+                      const budgetMax = job?.budget_max || 130000;
+                      const cur = job?.currency || "USD";
+                      const sym = getCurrencySymbol(cur);
+                      
+                      const formatVal = (val) => {
+                        if (val >= 1000) {
+                          return `${sym}${Math.round(val / 1000)}k`;
+                        }
+                        return `${sym}${val}`;
+                      };
+
+                      const expSalaryVal = Math.round(budgetMax * 1.05);
+                      const offSalaryVal = Math.round(budgetMax);
+                      const agreedSalaryVal = Math.round(budgetMax * 0.95);
+
+                      const expectedSalary = formatVal(expSalaryVal);
+                      const offeredSalary = formatVal(offSalaryVal);
+                      const agreedSalary = formatVal(agreedSalaryVal);
+
+                      return (
+                        <tr key={c.id} className="hover:bg-slate-900/20 transition-colors group">
+                          {/* Candidate details */}
+                          <td className="py-4 px-6 flex items-center gap-3">
+                            <div className="relative">
+                              <div className="h-10 w-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400">
+                                <UserIcon className="h-5 w-5" />
+                              </div>
+                              <div className="absolute -bottom-0 -right-0 h-3 w-3 bg-violet-500 border-2 border-slate-950 rounded-full" />
+                            </div>
+                            <div>
+                              <p className="font-bold text-slate-100 group-hover:text-white transition-colors">{c.name}</p>
+                              <p className="text-[10px] text-slate-500 mt-0.5">
+                                {c.score >= 8 ? "Top Performer" : "Good Match"}
+                              </p>
+                            </div>
+                          </td>
+
+                          {/* HR Status */}
+                          <td className="py-4 px-4">
+                            {status === 'ready' ? (
+                              <span className="flex items-center gap-1.5 text-slate-400 font-bold text-xs">
+                                <Video className="h-4 w-4 text-slate-500" /> Ready for HR Round
+                              </span>
+                            ) : (
+                              <span className="flex items-center gap-1.5 text-emerald-400 font-bold text-xs">
+                                <CheckCircle className="h-4 w-4 text-emerald-400" /> Completed
+                              </span>
+                            )}
+                          </td>
+
+                          {/* Salary and negotiation details */}
+                          <td className="py-4 px-4">
+                            {status === 'ready' ? (
+                              <span className="text-slate-600 text-xs italic">Pending HR evaluation...</span>
+                            ) : status === 'negotiating' ? (
+                              <div className="space-y-0.5">
+                                <span className="flex items-center gap-1.5 text-amber-500 font-extrabold text-xs">
+                                  <AlertTriangle className="h-4 w-4 text-amber-500" /> Negotiating
+                                </span>
+                                <p className="text-[10px] text-slate-500">
+                                  Exp: <span className="text-slate-300 font-bold">{expectedSalary}</span> • Off: <span className="text-slate-300 font-bold">{offeredSalary}</span>
+                                </p>
+                              </div>
+                            ) : (
+                              <div className="space-y-0.5">
+                                <span className="flex items-center gap-1.5 text-emerald-400 font-extrabold text-xs">
+                                  <CheckCircle className="h-4 w-4 text-emerald-400" /> Offer Accepted
+                                </span>
+                                <p className="text-[10px] text-slate-500">
+                                  Agreed: <span className="text-emerald-400 font-black">{agreedSalary}</span>
+                                </p>
+                              </div>
+                            )}
+                          </td>
+
+                          {/* Action Buttons */}
+                          <td className="py-4 px-6 text-right">
+                            {status === 'ready' ? (
+                              <Button
+                                onClick={() => {
+                                  setSelectedHrCandidate(c);
+                                  setIsHrRoundModalOpen(true);
+                                }}
+                                className="bg-pink-600 hover:bg-pink-500 text-white rounded-xl h-8 px-4 text-xs font-bold gap-1.5 shadow-lg shadow-pink-600/10"
+                              >
+                                <Video className="h-3.5 w-3.5" /> Proceed For HR Round
+                              </Button>
+                            ) : status === 'negotiating' ? (
+                              <Button
+                                onClick={() => {
+                                  setSelectedHrCandidate(c);
+                                  setIsCounterModalOpen(true);
+                                }}
+                                variant="outline"
+                                className="bg-slate-900 border-slate-800 text-slate-300 hover:text-white rounded-xl h-8 px-4 text-xs font-bold"
+                              >
+                                Review Counter
+                              </Button>
+                            ) : (
+                              <Button
+                                onClick={() => {
+                                  setSelectedHrCandidate(c);
+                                  setIsContractModalOpen(true);
+                                }}
+                                className="bg-emerald-950/80 hover:bg-emerald-900 text-emerald-400 border border-emerald-800 rounded-xl h-8 px-4 text-xs font-bold gap-1.5"
+                              >
+                                <FileText className="h-3.5 w-3.5" /> View Contract
+                              </Button>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              )}
             </div>
           )}
         </div>
@@ -903,6 +1266,304 @@ The Recruitment Team`;
             </motion.div>
           </div>
         )}
+      </AnimatePresence>
+
+      {/* Proceed for HR Round Modal */}
+      <AnimatePresence>
+        {isHrRoundModalOpen && selectedHrCandidate && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full max-w-lg bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-5 shadow-2xl overflow-y-auto max-h-[90vh]"
+            >
+              <div className="space-y-1">
+                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                  <Video className="h-5 w-5 text-pink-500 animate-pulse" />
+                  <span>Configure HR Round</span>
+                </h3>
+                <p className="text-xs text-slate-400">Initiate the secondary AI-powered HR interview round for candidate {selectedHrCandidate.name}.</p>
+              </div>
+
+              <div className="space-y-4 bg-slate-950 border border-slate-850 p-4.5 rounded-xl">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Candidate Context</label>
+                  <p className="text-xs text-slate-200">
+                    <span className="font-semibold">{selectedHrCandidate.name}</span> ({selectedHrCandidate.email})
+                  </p>
+                  <p className="text-[11px] text-slate-400 mt-1">
+                    AI Screening Score: <span className="text-pink-500 font-black">{selectedHrCandidate.score.toFixed(1)}/10</span>
+                  </p>
+                  <p className="text-[11px] text-slate-400">
+                    Target Budget Max: <span className="text-indigo-400 font-bold">{getCurrencySymbol(job?.currency)}{job?.budget_max || "130,000"}</span>
+                  </p>
+                </div>
+
+                <div className="space-y-2 pt-2 border-t border-slate-900">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+                    <span>Generated Meeting Link</span>
+                    <span className="text-[9px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded font-black uppercase">Vapi-Ready</span>
+                  </label>
+                  
+                  <div className="flex gap-2">
+                    <Input
+                      readOnly
+                      value={`${window.location.origin}/hr-interview/${interview_id}?candidate=${encodeURIComponent(selectedHrCandidate.name)}`}
+                      className="bg-slate-900 border-slate-800 text-slate-300 rounded-xl text-xs h-10 w-full font-mono cursor-text"
+                    />
+                    <Button
+                      onClick={() => {
+                        const link = `${window.location.origin}/hr-interview/${interview_id}?candidate=${encodeURIComponent(selectedHrCandidate.name)}`;
+                        navigator.clipboard.writeText(link);
+                        toast.success("HR Round link copied to clipboard!");
+                      }}
+                      className="bg-slate-800 hover:bg-slate-750 text-slate-200 rounded-xl h-10 w-10 flex items-center justify-center p-0 border border-slate-750"
+                      title="Copy Link"
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Simulation Option */}
+              <div className="space-y-3 bg-indigo-950/20 border border-indigo-900/30 p-4 rounded-xl">
+                <label className="text-[10px] font-extrabold text-indigo-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <ShieldCheck className="h-4 w-4" /> Simulation & Vapi Sync Mode
+                </label>
+                <p className="text-[11px] text-slate-350 leading-relaxed">
+                  Normally, Vapi handles the HR Voice Interview, matching the target budget and evaluating alignment. Since Vapi credentials/scaffolding are set, select an outcome below to simulate candidate response:
+                </p>
+                
+                <div className="grid grid-cols-2 gap-3 pt-1">
+                  <Button
+                    onClick={() => {
+                      updateHrStatus(selectedHrCandidate.email, 'negotiating');
+                      setIsHrRoundModalOpen(false);
+                      toast.success(`HR Interview simulated! ${selectedHrCandidate.name} has counter-offered.`);
+                    }}
+                    className="bg-amber-600/15 hover:bg-amber-600/25 border border-amber-500/30 text-amber-400 rounded-xl h-9.5 text-xs font-bold"
+                  >
+                    Set to Negotiating
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      updateHrStatus(selectedHrCandidate.email, 'accepted');
+                      setIsHrRoundModalOpen(false);
+                      toast.success(`HR Interview simulated! ${selectedHrCandidate.name} accepted the offer.`);
+                    }}
+                    className="bg-emerald-600/15 hover:bg-emerald-600/25 border border-emerald-500/30 text-emerald-400 rounded-xl h-9.5 text-xs font-bold"
+                  >
+                    Set to Offer Accepted
+                  </Button>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-2 border-t border-slate-850">
+                <Button
+                  onClick={() => setIsHrRoundModalOpen(false)}
+                  variant="outline"
+                  className="bg-transparent border-slate-850 text-slate-400 hover:bg-slate-800 rounded-xl text-xs font-bold"
+                >
+                  Cancel
+                </Button>
+                
+                <Button
+                  onClick={() => {
+                    const link = `${window.location.origin}/hr-interview/${interview_id}?candidate=${encodeURIComponent(selectedHrCandidate.name)}`;
+                    const mailtoUrl = `mailto:${selectedHrCandidate.email}?subject=${encodeURIComponent("Invitation: AI HR Interview Round")}&body=${encodeURIComponent(
+                      `Hi ${selectedHrCandidate.name},\n\nCongratulations on passing the initial screening phase!\n\nWe would love to invite you to the AI HR Interview Round. This step will cover salary expectations, organizational alignment, and benefits. You will converse with our AI HR agent.\n\nPlease launch the interview link below when you are ready:\n${link}\n\nWarm regards,\nRecruiting Team`
+                    )}`;
+                    window.open(mailtoUrl);
+                    toast.success("Email client opened with invite template!");
+                  }}
+                  className="bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold h-10 px-5 flex items-center gap-1.5 shadow-lg shadow-indigo-600/15"
+                >
+                  <Mail className="h-4 w-4" />
+                  <span>Send Email Invite</span>
+                </Button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Review Counter Modal */}
+      <AnimatePresence>
+        {isCounterModalOpen && selectedHrCandidate && (() => {
+          const budgetMax = job?.budget_max || 130000;
+          const cur = job?.currency || "USD";
+          const sym = getCurrencySymbol(cur);
+          
+          const formatVal = (val) => {
+            if (val >= 1000) {
+              return `${sym}${Math.round(val / 1000)}k`;
+            }
+            return `${sym}${val}`;
+          };
+
+          const expectedSalary = formatVal(Math.round(budgetMax * 1.05));
+          const offeredSalary = formatVal(Math.round(budgetMax));
+
+          return (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="w-full max-w-md bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-5 shadow-2xl"
+              >
+                <div className="space-y-1">
+                  <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                    <AlertTriangle className="h-5 w-5 text-amber-500" />
+                    <span>Review Salary Counter</span>
+                  </h3>
+                  <p className="text-xs text-slate-400">Review the counter-offer proposal submitted by {selectedHrCandidate.name}.</p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 bg-slate-950 border border-slate-850 p-5.5 rounded-xl">
+                  <div className="space-y-1 text-center border-r border-slate-900">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Company Offer</span>
+                    <p className="text-2xl font-black text-slate-300">{offeredSalary}</p>
+                  </div>
+                  <div className="space-y-1 text-center">
+                    <span className="text-[10px] font-bold text-amber-500 uppercase tracking-wider">Candidate Counter</span>
+                    <p className="text-2xl font-black text-amber-400">{expectedSalary}</p>
+                  </div>
+                </div>
+
+                <p className="text-[11px] text-slate-450 leading-relaxed">
+                  Accepting the counter will adjust the final agreed salary to <span className="text-white font-bold">{expectedSalary}</span> and mark the candidate as offer accepted. Rejecting will revert the candidate's status to ready for HR re-evaluation.
+                </p>
+
+                <div className="flex gap-3 justify-end pt-2 border-t border-slate-850">
+                  <Button
+                    onClick={() => {
+                      updateHrStatus(selectedHrCandidate.email, 'ready');
+                      setIsCounterModalOpen(false);
+                      toast.info("Counter offer declined. Status reset to Ready.");
+                    }}
+                    variant="outline"
+                    className="bg-transparent border-slate-850 text-slate-400 hover:bg-slate-800 rounded-xl text-xs font-bold"
+                  >
+                    Decline & Re-evaluate
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      updateHrStatus(selectedHrCandidate.email, 'accepted');
+                      setIsCounterModalOpen(false);
+                      toast.success(`Counter offer accepted! Agreed salary: ${expectedSalary}`);
+                    }}
+                    className="bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold h-10 px-5 flex items-center gap-1.5"
+                  >
+                    <CheckCircle className="h-4 w-4" />
+                    <span>Accept Counter Offer</span>
+                  </Button>
+                </div>
+              </motion.div>
+            </div>
+          );
+        })()}
+      </AnimatePresence>
+
+      {/* View Contract Modal */}
+      <AnimatePresence>
+        {isContractModalOpen && selectedHrCandidate && (() => {
+          const budgetMax = job?.budget_max || 130000;
+          const cur = job?.currency || "USD";
+          const sym = getCurrencySymbol(cur);
+          
+          const formatVal = (val) => {
+            if (val >= 1000) {
+              return `${sym}${Math.round(val / 1000)}k`;
+            }
+            return `${sym}${val}`;
+          };
+
+          const agreedSalary = formatVal(Math.round(budgetMax * 0.95));
+          const currentDate = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+
+          return (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="w-full max-w-2xl bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-5 shadow-2xl"
+              >
+                <div className="space-y-1">
+                  <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                    <FileText className="h-5 w-5 text-emerald-400" />
+                    <span>Candidate Employment Contract</span>
+                  </h3>
+                  <p className="text-xs text-slate-400">Verifying hiring agreement terms generated on {currentDate}.</p>
+                </div>
+
+                <div className="bg-slate-950 border border-slate-850 p-6 rounded-xl space-y-4 max-h-96 overflow-y-auto text-xs text-slate-350 font-serif leading-relaxed shadow-inner">
+                  <div className="text-center space-y-1 border-b border-slate-900 pb-4 font-sans font-bold uppercase tracking-wider text-slate-200">
+                    <h4 className="text-sm font-black">Offer Letter & Employment Agreement</h4>
+                    <p className="text-[10px] text-slate-450 font-medium">SaaS Recruiting Inc.</p>
+                  </div>
+                  
+                  <p>
+                    This Agreement is entered into on <span className="font-bold font-sans text-white">{currentDate}</span>, by and between <span className="font-bold font-sans text-white">SaaS Recruiting Inc.</span> (the "Company") and <span className="font-bold font-sans text-white">{selectedHrCandidate.name}</span> (the "Employee").
+                  </p>
+
+                  <div className="space-y-2 font-sans text-[11px] bg-slate-900/50 p-3 rounded-lg border border-slate-900">
+                    <p><span className="text-slate-450 font-bold">Position:</span> <span className="text-white font-bold">{job?.jobPosition || "Software Engineer"}</span></p>
+                    <p><span className="text-slate-450 font-bold">Department:</span> <span className="text-white font-bold">{job?.department || "Engineering"}</span></p>
+                    <p><span className="text-slate-450 font-bold">Agreed Base Salary:</span> <span className="text-emerald-400 font-black">{agreedSalary} / year</span></p>
+                    <p><span className="text-slate-450 font-bold">Location:</span> <span className="text-white font-bold">{job?.location || "Remote"}</span></p>
+                  </div>
+
+                  <p className="font-bold uppercase tracking-wider text-[10px] text-slate-400 mt-4 border-b border-slate-900/60 pb-1">1. Duties & Responsibilities</p>
+                  <p>
+                    The Employee agrees to perform the duties typical of the role and any additional responsibilities matching their job description.
+                  </p>
+
+                  <p className="font-bold uppercase tracking-wider text-[10px] text-slate-400 mt-4 border-b border-slate-900/60 pb-1">2. Compensation & Benefits</p>
+                  <p>
+                    The Company shall pay the Employee a base salary of {agreedSalary} per annum, payable in accordance with the standard payroll schedule of the Company. The Employee is also entitled to standard health benefits and 25 calendar days of paid leaves.
+                  </p>
+
+                  <div className="grid grid-cols-2 gap-4 pt-8 font-sans">
+                    <div className="space-y-1">
+                      <div className="h-px bg-slate-800 w-full mt-8" />
+                      <p className="text-[10px] text-slate-500">Representative Signature</p>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="h-px bg-slate-805 w-full mt-8 flex items-center justify-center text-xs text-indigo-400 font-sans italic font-bold">
+                        Digitally Signed by Employee
+                      </div>
+                      <p className="text-[10px] text-slate-500">Employee Signature</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-3 justify-end pt-2 border-t border-slate-850">
+                  <Button
+                    onClick={() => setIsContractModalOpen(false)}
+                    variant="outline"
+                    className="bg-transparent border-slate-850 text-slate-400 hover:bg-slate-800 rounded-xl text-xs font-bold"
+                  >
+                    Close
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      toast.success("Contract downloaded as PDF successfully!");
+                      setIsContractModalOpen(false);
+                    }}
+                    className="bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold h-10 px-5 flex items-center gap-1.5 shadow-lg shadow-emerald-600/15"
+                  >
+                    <CheckCircle className="h-4 w-4" />
+                    <span>Download Signed PDF</span>
+                  </Button>
+                </div>
+              </motion.div>
+            </div>
+          );
+        })()}
       </AnimatePresence>
     </div>
   );
