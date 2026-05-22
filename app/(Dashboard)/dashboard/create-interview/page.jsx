@@ -148,7 +148,7 @@ const CreateInterview = () => {
 
         <div className="space-y-1.5">
           <h1 className="text-3xl font-black tracking-tight bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
-            Create New Job
+            Create New Job Opening
           </h1>
           <p className="text-sm text-gray-400">
             Configure job details and set up AI automation rules for the recruiting pipeline.
@@ -157,7 +157,7 @@ const CreateInterview = () => {
       </div>
 
       {/* Modern Multi-step Progress Bar */}
-      <div className="relative flex items-center justify-between max-w-lg px-2">
+      <div className="relative flex items-center justify-between w-full px-20">
         {/* Background connector line */}
         <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-0.5 bg-slate-800 z-0" />
 

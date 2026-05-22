@@ -43,7 +43,7 @@ const AutomationSettings = ({ formData, handleInputChange, goNext, goBack }) => 
           <Bot className="h-5 w-5" />
         </div>
         <div>
-          <h2 className="text-xl font-bold">Step 2: Automation Settings</h2>
+          <h2 className="text-xl font-bold">Automation/Parsing Settings</h2>
           <p className="text-xs text-gray-400 mt-0.5">Configure automated recruitment tasks and triggers.</p>
         </div>
       </div>

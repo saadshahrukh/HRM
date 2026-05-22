@@ -182,7 +182,7 @@ const QuestionList = ({ formData, onCreateLink, goBack }) => {
             <BrainCircuit className="h-5 w-5" />
           </div>
           <div>
-            <h2 className="text-xl font-bold">Step 3: AI Interview Questions</h2>
+            <h2 className="text-xl font-bold">Interview Questions</h2>
             <p className="text-xs text-gray-400 mt-0.5">
               The AI has prepared the following screening questions based on the{" "}
               <span className="font-bold text-white">"{formData?.jobPosition || "Job Role"}"</span> description.

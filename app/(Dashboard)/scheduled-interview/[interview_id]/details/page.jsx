@@ -387,7 +387,8 @@ The Recruitment Team`;
     if (!fb) return 0;
     let parsedFb = null;
     try {
-      parsedFb = typeof fb.feedback === 'string' ? JSON.parse(fb.feedback) : fb.feedback;
+      const parsed = typeof fb.feedback === 'string' ? JSON.parse(fb.feedback) : fb.feedback;
+      parsedFb = parsed?.feedback || parsed;
     } catch(e) {}
     
     if (parsedFb) {

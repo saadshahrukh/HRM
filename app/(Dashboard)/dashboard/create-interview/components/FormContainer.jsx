@@ -55,7 +55,7 @@ const FormContainer = ({ formData, handleInputChange, goToNext }) => {
           <FileText className="h-5 w-5" />
         </div>
         <div>
-          <h2 className="text-xl font-bold">Step 1: Job Details</h2>
+          <h2 className="text-xl font-bold">Job Details</h2>
           <p className="text-xs text-gray-400 mt-0.5">Specify job details to train the AI interviewer.</p>
         </div>
       </div>
