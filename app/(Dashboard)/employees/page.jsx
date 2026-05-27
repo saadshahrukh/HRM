@@ -21,7 +21,9 @@ import {
   Activity,
   Award,
   ChevronLeft,
-  Plus
+  Plus,
+  Grid,
+  List
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -39,7 +41,9 @@ import {
   RadarChart, 
   PolarGrid, 
   PolarAngleAxis, 
-  PolarRadiusAxis
+  PolarRadiusAxis,
+  LineChart,
+  Line
 } from "recharts";
 
 // Mock Data
@@ -111,11 +115,12 @@ export default function EmployeeProfileDashboard() {
   const [search, setSearch] = useState("");
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [activeTab, setActiveTab] = useState("Overview");
+  const [viewMode, setViewMode] = useState("grid"); // "grid" | "list"
 
   const filteredEmployees = EMPLOYEES.filter(emp => emp.name.toLowerCase().includes(search.toLowerCase()) || emp.role.toLowerCase().includes(search.toLowerCase()));
 
   // ---------------------------------------------------------------------------
-  // RENDER: DIRECTORY GRID
+  // RENDER: DIRECTORY GRID / LIST
   // ---------------------------------------------------------------------------
   if (!selectedEmployee) {
     return (
@@ -125,7 +130,8 @@ export default function EmployeeProfileDashboard() {
             <h1 className="text-3xl font-black text-white tracking-tight">Employees Directory</h1>
             <p className="text-sm text-[#94A3B8] mt-1">Manage active workforce and view analytical profiles.</p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Search */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
               <Input 
@@ -135,6 +141,27 @@ export default function EmployeeProfileDashboard() {
                 className="pl-9 bg-[#070A12] border-slate-800 text-white focus:border-cyan-500 h-10 w-64 rounded-xl"
               />
             </div>
+            
+            {/* View Mode Toggle */}
+            <div className="flex bg-[#0B111E] border border-slate-800 rounded-xl p-0.5 h-10">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setViewMode("grid")}
+                className={`h-9 w-9 rounded-lg transition-all ${viewMode === "grid" ? "bg-cyan-600/20 text-cyan-400" : "text-slate-400 hover:text-white"}`}
+              >
+                <Grid className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setViewMode("list")}
+                className={`h-9 w-9 rounded-lg transition-all ${viewMode === "list" ? "bg-cyan-600/20 text-cyan-400" : "text-slate-400 hover:text-white"}`}
+              >
+                <List className="h-4 w-4" />
+              </Button>
+            </div>
+
             <Button variant="outline" className="bg-[#0B111E] border-slate-800 text-slate-300 hover:text-white rounded-xl h-10 px-4">
               <Filter className="h-4 w-4 mr-2" /> Filter
             </Button>
@@ -144,38 +171,192 @@ export default function EmployeeProfileDashboard() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredEmployees.map((emp) => (
-            <div 
-              key={emp.id}
-              onClick={() => setSelectedEmployee(emp)}
-              className="bg-[#0B111E] border border-white/5 rounded-2xl p-6 cursor-pointer hover:border-cyan-500/30 hover:shadow-[0_0_20px_rgba(0,210,255,0.1)] transition-all group relative overflow-hidden"
-            >
-              <div className="absolute top-4 right-4">
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-500 hover:text-white hover:bg-slate-800 rounded-full">
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
-              </div>
-              <div className="flex flex-col items-center text-center space-y-3">
-                <div className="relative">
-                  <img src={emp.avatar} alt={emp.name} className="h-20 w-20 rounded-full object-cover border-2 border-slate-800 group-hover:border-cyan-500 transition-colors" />
-                  <div className="absolute -bottom-1 -right-1 bg-emerald-500 border-2 border-[#0B111E] h-4 w-4 rounded-full" />
+        {viewMode === "grid" ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredEmployees.map((emp) => {
+              const perfTrend = [
+                { val: Math.max(30, emp.productivity - 15) },
+                { val: Math.max(30, emp.productivity - 8) },
+                { val: Math.max(30, emp.productivity - 12) },
+                { val: Math.max(30, emp.productivity - 3) },
+                { val: emp.productivity }
+              ];
+              const attTrend = [
+                { val: Math.max(50, emp.attendance - 10) },
+                { val: Math.max(50, emp.attendance - 4) },
+                { val: Math.max(50, emp.attendance - 6) },
+                { val: Math.max(50, emp.attendance - 2) },
+                { val: emp.attendance }
+              ];
+
+              return (
+                <div 
+                  key={emp.id}
+                  onClick={() => setSelectedEmployee(emp)}
+                  className="bg-[#0B111E] border border-white/5 rounded-2xl p-6 cursor-pointer hover:border-cyan-500/30 hover:shadow-[0_0_20px_rgba(0,210,255,0.1)] transition-all group relative overflow-hidden flex flex-col justify-between min-h-[340px]"
+                >
+                  <div className="absolute top-4 right-4" onClick={(e) => e.stopPropagation()}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-500 hover:text-white hover:bg-slate-800 rounded-full">
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="flex flex-col items-center text-center space-y-3">
+                    <div className="relative">
+                      <img src={emp.avatar} alt={emp.name} className="h-20 w-20 rounded-full object-cover border-2 border-slate-800 group-hover:border-cyan-500 transition-colors" />
+                      <div className="absolute -bottom-1 -right-1 bg-emerald-500 border-2 border-[#0B111E] h-4 w-4 rounded-full" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-white">{emp.name}</h3>
+                      <p className="text-xs text-cyan-400 font-medium">{emp.role}</p>
+                    </div>
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-900 rounded-md border border-slate-800">
+                      <span className="text-[10px] font-mono font-bold text-slate-400">{emp.id}</span>
+                    </div>
+                  </div>
+
+                  {/* Sparkline Metrics */}
+                  <div className="grid grid-cols-2 gap-3 pt-4 border-t border-slate-800/60 w-full mt-4">
+                    <div className="space-y-1">
+                      <div className="flex items-baseline justify-between">
+                        <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">AI Performance</span>
+                        <span className="text-xs font-black text-emerald-400">{emp.productivity}%</span>
+                      </div>
+                      <div className="h-7 w-full bg-slate-950/60 border border-white/5 rounded-lg p-1">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart data={perfTrend}>
+                            <Line type="monotone" dataKey="val" stroke="#10b981" strokeWidth={1.5} dot={false} />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-1">
+                      <div className="flex items-baseline justify-between">
+                        <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Attendance</span>
+                        <span className="text-xs font-black text-cyan-400">{emp.attendance}%</span>
+                      </div>
+                      <div className="h-7 w-full bg-slate-950/60 border border-white/5 rounded-lg p-1">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart data={attTrend}>
+                            <Line type="monotone" dataKey="val" stroke="#00D2FF" strokeWidth={1.5} dot={false} />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-3 mt-3 flex items-center justify-center gap-4 text-xs text-slate-500 w-full border-t border-slate-800/40">
+                    <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {emp.location.split(' ')[0]}</span>
+                    <span className="flex items-center gap-1"><Building2 className="h-3 w-3" /> {emp.department.split(' ')[0]}</span>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-lg font-bold text-white">{emp.name}</h3>
-                  <p className="text-xs text-cyan-400 font-medium">{emp.role}</p>
-                </div>
-                <div className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-900 rounded-md border border-slate-800">
-                  <span className="text-[10px] font-mono font-bold text-slate-400">{emp.id}</span>
-                </div>
-                <div className="pt-4 flex items-center justify-center gap-4 text-xs text-slate-500 w-full border-t border-slate-800/60">
-                  <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {emp.location.split(' ')[0]}</span>
-                  <span className="flex items-center gap-1"><Building2 className="h-3 w-3" /> {emp.department.split(' ')[0]}</span>
-                </div>
-              </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="bg-[#0B111E] border border-white/5 rounded-2xl overflow-hidden shadow-xl">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-800/60 text-[11px] font-bold text-slate-400 uppercase tracking-widest bg-slate-950/40">
+                    <th className="p-4 pl-6">Employee</th>
+                    <th className="p-4">Department & Location</th>
+                    <th className="p-4">AI Performance</th>
+                    <th className="p-4">Attendance</th>
+                    <th className="p-4 text-right pr-6">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-850">
+                  {filteredEmployees.map((emp) => {
+                    const perfTrend = [
+                      { val: Math.max(30, emp.productivity - 15) },
+                      { val: Math.max(30, emp.productivity - 8) },
+                      { val: Math.max(30, emp.productivity - 12) },
+                      { val: Math.max(30, emp.productivity - 3) },
+                      { val: emp.productivity }
+                    ];
+                    const attTrend = [
+                      { val: Math.max(50, emp.attendance - 10) },
+                      { val: Math.max(50, emp.attendance - 4) },
+                      { val: Math.max(50, emp.attendance - 6) },
+                      { val: Math.max(50, emp.attendance - 2) },
+                      { val: emp.attendance }
+                    ];
+
+                    return (
+                      <tr 
+                        key={emp.id}
+                        onClick={() => setSelectedEmployee(emp)}
+                        className="hover:bg-slate-900/30 transition-colors cursor-pointer group"
+                      >
+                        <td className="p-4 pl-6">
+                          <div className="flex items-center gap-3">
+                            <div className="relative shrink-0">
+                              <img src={emp.avatar} alt={emp.name} className="h-11 w-11 rounded-full object-cover border border-slate-800 group-hover:border-cyan-500 transition-colors" />
+                              <div className="absolute -bottom-0.5 -right-0.5 bg-emerald-500 border border-[#0B111E] h-3 w-3 rounded-full" />
+                            </div>
+                            <div>
+                              <h4 className="text-sm font-bold text-white group-hover:text-cyan-400 transition-colors">{emp.name}</h4>
+                              <div className="flex items-center gap-2 mt-0.5">
+                                <span className="text-xs text-slate-400 font-medium">{emp.role}</span>
+                                <span className="text-[9px] font-mono font-bold text-slate-500 bg-slate-900 px-1 py-0.25 rounded border border-slate-850">{emp.id}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+
+                        <td className="p-4 text-xs text-slate-300 font-medium">
+                          <div className="space-y-0.5">
+                            <p className="flex items-center gap-1.5"><Building2 className="h-3.5 w-3.5 text-slate-500" /> {emp.department}</p>
+                            <p className="flex items-center gap-1.5 text-slate-400"><MapPin className="h-3.5 w-3.5 text-slate-500" /> {emp.location}</p>
+                          </div>
+                        </td>
+
+                        <td className="p-4">
+                          <div className="flex items-center gap-4">
+                            <div className="space-y-0.5 min-w-[50px]">
+                              <p className="text-sm font-black text-emerald-400">{emp.productivity}%</p>
+                              <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">Productivity</p>
+                            </div>
+                            <div className="h-6 w-20 shrink-0 bg-slate-950/60 border border-white/5 rounded-md p-0.5">
+                              <ResponsiveContainer width="100%" height="100%">
+                                <LineChart data={perfTrend}>
+                                  <Line type="monotone" dataKey="val" stroke="#10b981" strokeWidth={1.5} dot={false} />
+                                </LineChart>
+                              </ResponsiveContainer>
+                            </div>
+                          </div>
+                        </td>
+
+                        <td className="p-4">
+                          <div className="flex items-center gap-4">
+                            <div className="space-y-0.5 min-w-[50px]">
+                              <p className="text-sm font-black text-cyan-400">{emp.attendance}%</p>
+                              <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">Attendance</p>
+                            </div>
+                            <div className="h-6 w-20 shrink-0 bg-slate-950/60 border border-white/5 rounded-md p-0.5">
+                              <ResponsiveContainer width="100%" height="100%">
+                                <LineChart data={attTrend}>
+                                  <Line type="monotone" dataKey="val" stroke="#00D2FF" strokeWidth={1.5} dot={false} />
+                                </LineChart>
+                              </ResponsiveContainer>
+                            </div>
+                          </div>
+                        </td>
+
+                        <td className="p-4 text-right pr-6" onClick={(e) => e.stopPropagation()}>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-500 hover:text-white hover:bg-slate-800 rounded-full">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
-          ))}
-        </div>
+          </div>
+        )}
       </div>
     );
   }

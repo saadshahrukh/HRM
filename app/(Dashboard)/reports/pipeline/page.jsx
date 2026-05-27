@@ -81,13 +81,19 @@ export default function HiringPipelineReportPage() {
   const handleDeleteJob = async (id) => {
     setDeleting(true);
     try {
-      // 1. Delete associated feedback
+      // 1. Delete associated candidates
+      await supabase
+        .from("candidates")
+        .delete()
+        .eq("interview_id", id);
+
+      // 2. Delete associated feedback
       await supabase
         .from("interview-feedback")
         .delete()
         .eq("interview_id", id);
 
-      // 2. Delete the interview record itself
+      // 3. Delete the interview record itself
       const { error } = await supabase
         .from("Interviews")
         .delete()
@@ -95,7 +101,7 @@ export default function HiringPipelineReportPage() {
 
       if (error) throw error;
 
-      toast.success("Job deleted successfully");
+      toast.success("Job pipeline deleted successfully");
       setDeleteConfirmId(null);
       fetchJobs();
     } catch (err) {
@@ -398,10 +404,25 @@ export default function HiringPipelineReportPage() {
               className="w-full max-w-md bg-slate-900 border border-slate-850 p-6 rounded-2xl space-y-6 shadow-2xl"
             >
               <div className="space-y-2">
-                <h3 className="text-xl font-bold text-white">Delete Job Post</h3>
-                <p className="text-sm text-slate-400">
-                  Are you sure you want to delete this job posting? This action will permanently remove all candidate reports and pipelines.
+                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                  <Trash2 className="h-5 w-5 text-red-500 animate-pulse" />
+                  <span>Delete Job Pipeline</span>
+                </h3>
+                <p className="text-sm text-slate-450 leading-relaxed">
+                  Are you absolutely sure you want to delete this job posting?
                 </p>
+                
+                <div className="bg-red-500/5 border border-red-500/10 p-4 rounded-xl text-xs text-red-400 space-y-2 leading-relaxed">
+                  <p className="font-bold">⚠️ Warning: This action is permanent and will cascade delete:</p>
+                  <ul className="list-disc pl-4 space-y-1 text-slate-300">
+                    <li>The Job Position, JD, and generated AI Question list</li>
+                    <li>All associated candidate profiles, resumes, and scores</li>
+                    <li>All AI interview feedback reports & transcripts</li>
+                  </ul>
+                  <p className="text-[10px] text-slate-500 mt-2 font-medium">
+                    * Deletion is scoped to this unique pipeline ID. Candidates with identical emails in other active pipelines will not be affected.
+                  </p>
+                </div>
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-2">
@@ -415,7 +436,7 @@ export default function HiringPipelineReportPage() {
                 </Button>
                 <Button
                   onClick={() => handleDeleteJob(deleteConfirmId)}
-                  className="bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold"
+                  className="bg-red-650 hover:bg-red-700 text-white rounded-xl font-bold px-4 shadow-lg shadow-red-650/10"
                   disabled={deleting}
                 >
                   {deleting ? (
@@ -432,3 +453,5 @@ export default function HiringPipelineReportPage() {
     </div>
   );
 }
+
+
