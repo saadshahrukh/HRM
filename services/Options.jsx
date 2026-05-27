@@ -51,7 +51,7 @@ Ensure the questions match the tone and structure of a real-life {{type}} interv
 format: interviewQuestions=[
 {
  question:'',
- type:'Technical/Behavioral/Experince/Problem Solving/Leaseship'
+ type:'Technical/Behavioral/Experience/Problem Solving/Leadership'
 },{
 ...
 }]

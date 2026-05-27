@@ -391,6 +391,7 @@ Key Guidelines:
             recordingUrls: recordingUrls,
           },
           recommended: feedbackData.feedback?.Recommendation?.toLowerCase() !== "no",
+          conversation: conversation ? (typeof conversation === 'string' ? JSON.parse(conversation) : conversation) : null,
         },
       ]);
 
