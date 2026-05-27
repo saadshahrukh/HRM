@@ -59,6 +59,15 @@ export const SideBarOptions = [
     ],
   },
   {
+    id: "employees",
+    name: "Employees",
+    icon: User2,
+    children: [
+      { name: "Employee Directory", icon: Users, path: "/employees" },
+      { name: "Onboarding Pipeline", icon: ClipboardList, path: "/onboarding" },
+    ],
+  },
+  {
     id: "reports",
     name: "Reports",
     icon: BarChart3,

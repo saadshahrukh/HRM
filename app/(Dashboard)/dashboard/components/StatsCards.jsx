@@ -1,154 +1,90 @@
 "use client";
-import { useUser } from "@/app/Provider";
-import { supabase } from "@/services/supaBaseClient";
-import { Calendar, Users, TrendingUp, Clock } from "lucide-react";
-import React, { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import React from "react";
+import { Users, Briefcase, Calendar, CheckCircle2, Clock, Activity, ArrowUpRight, ArrowDownRight } from "lucide-react";
 
 const StatsCards = () => {
-  const { user } = useUser();
-  const [stats, setStats] = useState({
-    totalInterviews: 0,
-    totalCandidates: 0,
-    thisMonth: 0,
-    avgDuration: 0,
-  });
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (user) {
-      fetchStats();
-    }
-  }, [user]);
-
-  const fetchStats = async () => {
-    try {
-      setLoading(true);
-      
-      // Get total interviews
-      const { data: interviews, error: interviewsError } = await supabase
-        .from("Interviews")
-        .select("id, duration, created_at, interview-feedback(id)")
-        .eq("userEmail", user?.email);
-
-      if (interviewsError) throw interviewsError;
-
-      // Get this month's interviews
-      const thisMonth = new Date();
-      thisMonth.setDate(1);
-      const thisMonthInterviews = interviews?.filter(
-        (i) => new Date(i.created_at) >= thisMonth
-      ) || [];
-
-      // Calculate total candidates
-      const totalCandidates = interviews?.reduce(
-        (sum, i) => sum + (i["interview-feedback"]?.length || 0),
-        0
-      ) || 0;
-
-      // Calculate average duration
-      const durations = interviews?.map((i) => {
-        const match = i.duration?.match(/(\d+)/);
-        return match ? parseInt(match[1]) : 0;
-      }) || [];
-      const avgDuration =
-        durations.length > 0
-          ? durations.reduce((a, b) => a + b, 0) / durations.length
-          : 0;
-
-      setStats({
-        totalInterviews: interviews?.length || 0,
-        totalCandidates,
-        thisMonth: thisMonthInterviews.length,
-        avgDuration: Math.round(avgDuration),
-      });
-    } catch (error) {
-      console.error("Error fetching stats:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const statCards = [
+  const cards = [
     {
-      icon: Calendar,
-      label: "Total Interviews",
-      value: stats.totalInterviews,
-      change: `+${stats.thisMonth} this month`,
-      color: "from-indigo-500 to-purple-600",
-      iconBg: "bg-indigo-500/10",
-      iconColor: "text-indigo-400",
-    },
-    {
+      title: "Total Employees",
+      value: "842",
+      change: "+12",
+      isPositive: true,
       icon: Users,
-      label: "Total Candidates",
-      value: stats.totalCandidates,
-      change: "All time",
-      color: "from-blue-500 to-cyan-600",
       iconBg: "bg-blue-500/10",
-      iconColor: "text-blue-400",
+      iconColor: "text-blue-500",
     },
     {
-      icon: TrendingUp,
-      label: "This Month",
-      value: stats.thisMonth,
-      change: "New interviews",
-      color: "from-green-500 to-emerald-600",
-      iconBg: "bg-green-500/10",
-      iconColor: "text-green-400",
+      title: "Active Jobs",
+      value: "24",
+      change: "+3",
+      isPositive: true,
+      icon: Briefcase,
+      iconBg: "bg-purple-500/10",
+      iconColor: "text-purple-500",
     },
     {
+      title: "On Leave Today",
+      value: "15",
+      change: "-2",
+      isPositive: true, // actually a decrease in leave is positive
+      icon: Calendar,
+      iconBg: "bg-pink-500/10",
+      iconColor: "text-pink-500",
+    },
+    {
+      title: "Hired (This Month)",
+      value: "64",
+      change: "+18%",
+      isPositive: true,
+      icon: CheckCircle2,
+      iconBg: "bg-emerald-500/10",
+      iconColor: "text-emerald-500",
+    },
+    {
+      title: "Avg. Hiring Time",
+      value: "12 days",
+      change: "-3 days",
+      isPositive: true,
       icon: Clock,
-      label: "Avg Duration",
-      value: `${stats.avgDuration} min`,
-      change: "Per interview",
-      color: "from-orange-500 to-red-600",
-      iconBg: "bg-orange-500/10",
-      iconColor: "text-orange-400",
+      iconBg: "bg-amber-500/10",
+      iconColor: "text-amber-500",
+    },
+    {
+      title: "AI Productivity Score",
+      value: "92%",
+      change: "+4%",
+      isPositive: true,
+      icon: Activity,
+      iconBg: "bg-cyan-500/10",
+      iconColor: "text-cyan-500",
     },
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {statCards.map((stat, index) => {
-        const Icon = stat.icon;
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+      {cards.map((card, index) => {
+        const Icon = card.icon;
         return (
-          <motion.div
+          <div
             key={index}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-            className="relative overflow-hidden rounded-xl border border-border bg-card p-6"
+            className="bg-[#0B111E] border border-white/5 rounded-2xl p-6 relative overflow-hidden group hover:border-white/10 transition-colors"
           >
-            {loading ? (
-              <div className="space-y-3">
-                <div className="h-4 bg-muted rounded animate-pulse" />
-                <div className="h-8 bg-muted rounded animate-pulse" />
-                <div className="h-3 bg-muted rounded animate-pulse w-2/3" />
+            <div className="flex items-start justify-between mb-4">
+              <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${card.iconBg}`}>
+                <Icon className={`h-5 w-5 ${card.iconColor}`} />
               </div>
-            ) : (
-              <>
-                <div className="flex items-start justify-between mb-4">
-                  <div
-                    className={`inline-flex p-3 rounded-lg ${stat.iconBg}`}
-                  >
-                    <Icon className={`w-6 h-6 ${stat.iconColor}`} />
-                  </div>
-                </div>
-                <div>
-                  <p className="text-muted-foreground text-sm mb-1">{stat.label}</p>
-                  <p className="text-3xl font-bold text-card-foreground mb-1">
-                    {stat.value}
-                  </p>
-                  <p className="text-xs text-muted-foreground">{stat.change}</p>
-                </div>
-                {/* Gradient Background */}
-                <div
-                  className={`absolute bottom-0 right-0 w-32 h-32 bg-gradient-to-br ${stat.color} opacity-5 rounded-full blur-2xl`}
-                />
-              </>
-            )}
-          </motion.div>
+              <div className={`flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-bold ${
+                card.isPositive ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'
+              }`}>
+                {card.isPositive ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
+                {card.change}
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-bold text-slate-500 tracking-wider mb-1">{card.title}</p>
+              <h3 className="text-3xl font-black text-white">{card.value}</h3>
+            </div>
+          </div>
         );
       })}
     </div>

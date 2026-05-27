@@ -13,13 +13,13 @@ const Dashboard = () => {
     <div className="space-y-8">
       <WelcomeContainer />
       <StatsCards />
+      <AdvancedAnalytics />
       <CreateOptions />
       <DashboardPipeline />
-      <AdvancedAnalytics />
       <LatestInterviewsList />
       <DashboardActivity />
-      
-      
+
+
     </div>
   );
 };

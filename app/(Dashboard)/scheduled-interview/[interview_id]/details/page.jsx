@@ -29,7 +29,8 @@ import {
   Star,
   AlertTriangle,
   Copy,
-  CheckCircle2
+  CheckCircle2,
+  Rocket
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -1024,12 +1025,11 @@ The Recruitment Team`;
                             ) : (
                               <Button
                                 onClick={() => {
-                                  setSelectedHrCandidate(c);
-                                  setIsContractModalOpen(true);
+                                  router.push(`/onboarding?candidateName=${encodeURIComponent(c.name)}&candidateEmail=${encodeURIComponent(c.email)}&salary=${encodeURIComponent(agreedSalary)}&jobRole=${encodeURIComponent(job?.jobPosition || '')}&department=${encodeURIComponent(job?.department || '')}`);
                                 }}
-                                className="bg-emerald-950/80 hover:bg-emerald-900 text-emerald-400 border border-emerald-800 rounded-xl h-8 px-4 text-xs font-bold gap-1.5"
+                                className="bg-cyan-600 hover:bg-cyan-500 text-white border border-cyan-500 rounded-xl h-8 px-4 text-xs font-bold gap-1.5 shadow-lg shadow-cyan-600/20"
                               >
-                                <FileText className="h-3.5 w-3.5" /> View Contract
+                                <Rocket className="h-3.5 w-3.5" /> Start Onboarding
                               </Button>
                             )}
                           </td>
