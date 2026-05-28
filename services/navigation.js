@@ -17,6 +17,7 @@ import {
   WalletCards,
   Plug,
   Shield,
+  Cpu
 } from "lucide-react";
 
 /**
@@ -28,6 +29,12 @@ export const SideBarOptions = [
     name: "Dashboard",
     icon: LayoutDashboard,
     path: "/dashboard",
+  },
+  {
+    id: "operations",
+    name: "Operations",
+    icon: Cpu,
+    path: "/operations",
   },
   {
     id: "jobs",
